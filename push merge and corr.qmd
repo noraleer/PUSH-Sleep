@@ -8,8 +8,8 @@ descriptive stats on both data tests pivot longer on wide and merge them
 
 ```{r}
 library(tidyverse)
-push_wide <- read_csv("C:/Users/gigip/personal/CDSC/push/PUSH_actigraph_geo_wide_8.7.25.csv")
-push_long <- read_csv("C:/Users/gigip/personal/CDSC/push/PUSH_long_geo.csv")
+push_wide <- read_csv("PUSH_actigraph_geo_wide_8.7.25.csv")
+push_long <- read_csv("PUSH_long_geo.csv")
 ```
 
 ## Wide Descriptive Stats
