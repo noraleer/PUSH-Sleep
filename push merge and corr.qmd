@@ -1,0 +1,46 @@
+---
+title: "push merge and corr"
+format: html
+editor: visual
+---
+
+descriptive stats on both data tests pivot longer on wide and merge them
+
+```{r}
+library(tidyverse)
+push_wide <- read_csv("C:/Users/gigip/personal/CDSC/push/PUSH_actigraph_geo_wide_8.7.25.csv")
+push_long <- read_csv("C:/Users/gigip/personal/CDSC/push/PUSH_long_geo.csv")
+```
+
+## Wide Descriptive Stats
+
+```{r}
+# amount of actigraph days that are completed
+unique(push_wide$C_ACTI_Interval)
+
+parts <- push_wide %>% select(ParticipantID, C1_ACTI_SL_Interval) 
+parts
+```
+
+## Long Descriptive Stats
+
+```{r}
+# amount of antiactical days that are completed
+unique(push_long$C_ACTI_Interval)
+
+unique(push_long$C_ACTI_Yes) #only 1s, so all actigraph are completed
+
+push_long$C_DD_Yes # 0 and 1; 0 is no daily diary
+
+
+id <- unique(push_long$ParticipantID)
+length(id)
+```
+
+### left join
+
+```{r}
+# Perform a left join
+all <- left_join(push_long, push_wide, by = "ParticipantID")
+write.csv(all, file = "push_data.csv", row.names = FALSE)
+```
