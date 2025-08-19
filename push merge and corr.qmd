@@ -10,16 +10,21 @@ descriptive stats on both data tests pivot longer on wide and merge them
 library(tidyverse)
 push_wide <- read_csv("C:/Users/gigip/personal/CDSC/push/PUSH_actigraph_geo_wide_8.7.25.csv")
 push_long <- read_csv("C:/Users/gigip/personal/CDSC/push/PUSH_long_geo.csv")
+
+library(tidyverse)
+push_wide <- read_csv("./data/PUSH_actigraph_geo_wide_8.7.25.csv")
+push_long <- read_csv("./data/PUSH_long_geo.csv")
 ```
 
 ## Wide Descriptive Stats
 
 ```{r}
 # amount of actigraph days that are completed
-unique(push_wide$C_ACTI_Interval)
+unique(push_wide$C1_ACTI_SL_Interval)
 
 parts <- push_wide %>% select(ParticipantID, C1_ACTI_SL_Interval) 
-parts
+parts 
+parts %>% nrow()
 ```
 
 ## Long Descriptive Stats
