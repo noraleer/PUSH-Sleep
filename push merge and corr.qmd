@@ -4,13 +4,17 @@ format: html
 editor: visual
 ---
 
-descriptive stats on both data tests pivot longer on wide and merge them
+For the PUSH data, there is a wide dataset with all the survey information for the participants of the study. The long dataset has day-by-day data for metrics from each night of sleep for the participants. These datasets were merged into a single dataset. Then a correlation matrix was created for the variables of interest (dependent variables, covariates, and fixed effects). On the correlation matrix, darker colors and bigger squares mean a stronger correlation. The part of the matrix we are interested in is the top right part, which shows the correlation between the dependent variables and fixed effects.
 
 ```{r message = FALSE, warning=FALSE}
 library(corrplot)
 library(tidyverse)
-push_wide <- read_csv("./data/PUSH_actigraph_geo_wide_8.7.25.csv")
-push_long <- read_csv("./data/PUSH_long_geo.csv")
+
+# push_wide <- read_csv("./data/PUSH_actigraph_geo_wide_8.7.25.csv")
+# push_long <- read_csv("./data/PUSH_long_geo.csv")
+
+push_wide <- read_csv("PUSH_actigraph_geo_wide_8.7.25.csv")
+push_long <- read_csv("PUSH_long_geo.csv")
 ```
 
 ## Wide Descriptive Stats
