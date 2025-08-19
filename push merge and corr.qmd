@@ -16,7 +16,7 @@ push_long <- read_csv("PUSH_long_geo.csv")
 
 ```{r}
 # amount of actigraph days that are completed
-unique(push_wide$C_ACTI_Interval)
+unique(push_wide$C1_ACTI_SL_Interval)
 
 parts <- push_wide %>% select(ParticipantID, C1_ACTI_SL_Interval) 
 parts
@@ -26,15 +26,13 @@ parts
 
 ```{r}
 # amount of antiactical days that are completed
-unique(push_long$C_ACTI_Interval)
+table(push_long$C_ACTI_Interval)
 
-unique(push_long$C_ACTI_Yes) #only 1s, so all actigraph are completed
+table(push_long$C_ACTI_Yes) #only 1s, so all actigraph are completed
 
 push_long$C_DD_Yes # 0 and 1; 0 is no daily diary
 
-
-id <- unique(push_long$ParticipantID)
-length(id)
+table(push_long$ParticipantID)
 ```
 
 ### left join
@@ -42,5 +40,96 @@ length(id)
 ```{r}
 # Perform a left join
 all <- left_join(push_long, push_wide, by = "ParticipantID")
-write.csv(all, file = "push_data.csv", row.names = FALSE)
+```
+
+## Correlation Matrix
+
+**DVs (sleep variables with models run for each sleep DV):**
+
+Sleep Variables \[weekly level\]-
+
+1.  Duration (C_ACTI_SleepTimeAvg)
+
+2.  Timing
+
+-   offset/waketime (C_ACTI_WTmean)
+
+-   onset/falling asleep (C_ACTI_SleepOnsetTime_mean)
+
+3.  Quality
+
+-   efficiency (C_ACTI_EfficiencyAvg)
+
+-   awakenings (C_ACTI_WasoAvg)
+
+4.  Variability
+
+-   Duration (C_ACTI_SleepTime_sd)
+
+-   Timing
+
+    -   offset/waketime (C_ACTI_WTsd)
+
+    -   onset/falling asleep (C_ACTI_SleepOnsetTime_sd)
+
+**Covariates:**
+
+1.  Sex (c_demo_8_v2)
+
+2.  Age (c_demo_2_v2)
+
+3.  Grade in School (c_demo_6_v2)
+
+4.  Caregiver Highest Education (parent 1: p_demo_26_v2; parent 2: p_demo_27_v2)
+
+5.  School Year/Summer (C_DD_PM_DayType)
+
+-   Note that this is only for Daily Diary
+
+-   Needs to be calculated for Actigraphy (Use Date: C_ACTI_Date)
+
+**Fixed Effects:**
+
+Neighborhood Factors
+
+1.  COI Total (geo_COI_3.0)
+
+2.  COI Domains (3)
+
+-   Education (geo_COI_ED_3.0)
+
+-   Health & Environment (geo_COI_HE_3.0)
+
+-   Social & Economic (geo_COI_SE_3.0)
+
+Family Factors
+
+1.  Family Cohesion Subscale \[higher = more cohesion\]
+
+-   Parent report (P_COHESION)
+
+-   Child report (C_COHESION; individual items are named frm)
+
+2.  MESA
+
+-   MESA Family Trouble Subscale \[score is event count; higher=more family trouble events\] (C_MESA_FT)
+
+-   MESA Economic Stress Subscale \[score is event count; higher=more econ stress events\] (C_MESA_ES)
+
+3.  Adol CHAOS Subscale \[higher=more chaos\] (C_CHAOS)
+
+Sleep Environment Inventory
+
+1.  SEI Sleep Aids Subscale \[interpret so that higher score reflects more sleep aids\] (C_SEI_SA)
+
+2.  SEI Sleep Disturbances Subscale \[interpret so that higher score means less disturbance\] (C_SEI_SD)
+
+3.  SEI Comfort Subscale \[interpret so that higher score means more comfortable environment\] (C_SEI_C)
+
+```{r}
+vars <- all %>% select(C1_ACTI_SL_SleepTimeAvg)
+
+#C1_ACTI_SL_WTmean)
+
+#, C_ACTI_SleepOnsetTime_mean, C_ACTI_EfficiencyAvg, C_ACTI_WasoAvg, C_ACTI_SleepTime_sd, C_ACTI_WTsd, C_ACTI_SleepOnsetTime_sd)
 ```
