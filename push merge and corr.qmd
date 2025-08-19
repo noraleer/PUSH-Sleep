@@ -6,10 +6,11 @@ editor: visual
 
 descriptive stats on both data tests pivot longer on wide and merge them
 
-```{r}
+```{r message = FALSE, warning=FALSE}
+library(corrplot)
 library(tidyverse)
-push_wide <- read_csv("PUSH_actigraph_geo_wide_8.7.25.csv")
-push_long <- read_csv("PUSH_long_geo.csv")
+push_wide <- read_csv("./data/PUSH_actigraph_geo_wide_8.7.25.csv")
+push_long <- read_csv("./data/PUSH_long_geo.csv")
 ```
 
 ## Wide Descriptive Stats
@@ -40,6 +41,9 @@ table(push_long$ParticipantID)
 ```{r}
 # Perform a left join
 all <- left_join(push_long, push_wide, by = "ParticipantID")
+
+#Output all 
+#write.csv()
 ```
 
 ## Correlation Matrix
@@ -128,10 +132,40 @@ Sleep Environment Inventory
 
 ```{r}
 vars <- all %>% select(C1_ACTI_SL_SleepTimeAvg)
-vars <- all %>% select(C1_ACTI_SL_SleepTimeAvg, C1_ACTI_WTmean, C1_ACTI_SleepOnsetTime_mean, C1_ACTI_SL_EfficiencyAvg, C1_ACTI_SL_WasoAvg, C_ACTI_SleepTime_sd, C1_ACTI_SL_WakeTimeSd, C1_ACTI_SL_SleepTimeSd)
+
+
+all %>%
+  select(
+    SleepTimeAvg = C1_ACTI_SL_SleepTimeAvg,
+    WTmean = C1_ACTI_WTmean,
+    SOT_mean = C1_ACTI_SleepOnsetTime_mean,
+    EfficiencyAvg = C1_ACTI_SL_EfficiencyAvg,
+    WasoAvg = C1_ACTI_SL_WasoAvg,
+    WakeTimeSd = C1_ACTI_SL_WakeTimeSd,
+    SleepTimeSd = C1_ACTI_SL_SleepTimeSd,
+    age = c_demo_2_v2,
+    sex = c_demo_8_v2,
+    grade_in_school = c_demo_6_v2,
+    cg_highest_ed1 = p_demo_26_v2,
+    cg_highest_ed2 = p_demo_27_v2,
+    school_summer = C_DD_PM_DayType,
+    COItotal = geo_COI_3.0, 
+    COI_ED = geo_COI_ED_3.0,
+    COI_HE = geo_COI_HE_3.0,
+    COI_SE = geo_COI_SE_3.0,
+    P_COHESION, 
+    C_COHESION,
+    C_MESA_FT,
+    C_MESA_ES,
+    C_CHAOS,
+    C_SEI_SA,
+    C_SEI_SD,
+    C_SEI_C
+  ) %>% cor(use = "pairwise.complete.obs") %>% corrplot(method = "square", tl.cex = 0.5, addCoef.col = "black", number.cex = 0.3) %>% corrRect(name = c("SleepTimeAvg","age","COItotal","C_SEI_C"))
+
 
 #C1_ACTI_SL_WTmean)
 
 #, C_ACTI_SleepOnsetTime_mean, C_ACTI_EfficiencyAvg, C_ACTI_WasoAvg, C_ACTI_SleepTime_sd, C_ACTI_WTsd, C_ACTI_SleepOnsetTime_sd)
-cor(vars)
+
 ```
