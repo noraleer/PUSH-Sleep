@@ -127,9 +127,7 @@ Sleep Environment Inventory
 3.  SEI Comfort Subscale \[interpret so that higher score means more comfortable environment\] (C_SEI_C)
 
 ```{r}
-vars <- all %>% select(C1_ACTI_SL_SleepTimeAvg)
+vars <- all %>% select(C1_ACTI_SL_SleepTimeAvg, C1_ACTI_WTmean, C1_ACTI_SleepOnsetTime_mean, C1_ACTI_SL_EfficiencyAvg, C1_ACTI_SL_WasoAvg, C_ACTI_SleepTime_sd, C1_ACTI_SL_WakeTimeSd, C1_ACTI_SL_SleepTimeSd)
 
-#C1_ACTI_SL_WTmean)
-
-#, C_ACTI_SleepOnsetTime_mean, C_ACTI_EfficiencyAvg, C_ACTI_WasoAvg, C_ACTI_SleepTime_sd, C_ACTI_WTsd, C_ACTI_SleepOnsetTime_sd)
+cor(vars)
 ```
