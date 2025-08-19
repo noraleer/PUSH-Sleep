@@ -1,56 +1,52 @@
 ---
-title: "push merge and corr"
+title: "PUSH data correlation analysis"
 format: html
 editor: visual
+author: 
+  - Josie Peterburs
+  - Nora Reinhardt
+  - Gregory J.. Matthews
 ---
 
-For the PUSH data, there is a wide dataset with all the survey information for the participants of the study. The long dataset has day-by-day data for metrics from each night of sleep for the participants. These datasets were merged into a single dataset. Then a correlation matrix was created for the variables of interest (dependent variables, covariates, and fixed effects). On the correlation matrix, darker colors and bigger squares mean a stronger correlation. The part of the matrix we are interested in is the top right part, which shows the correlation between the dependent variables and fixed effects.
+# Introduction 
+
+The two main goals of this exploratory analysis are to: 
+  1. Create a single data set that merges daily data with individual survey level data.  
+  2. Examine bivariate correlations between the identified sleep variables (e.g. average sleep time, etc.), the covariates (e.g. age, sex, etc.), and the environmental variables (COI index, P_COHESION, etc.). 
+
 
 ```{r message = FALSE, warning=FALSE}
 library(corrplot)
 library(tidyverse)
 
-# push_wide <- read_csv("./data/PUSH_actigraph_geo_wide_8.7.25.csv")
-# push_long <- read_csv("./data/PUSH_long_geo.csv")
+push_wide <- read_csv("./data/PUSH_actigraph_geo_wide_8.7.25.csv")
+push_long <- read_csv("./data/PUSH_long_geo.csv")
 
-push_wide <- read_csv("PUSH_actigraph_geo_wide_8.7.25.csv")
-push_long <- read_csv("PUSH_long_geo.csv")
+# push_wide <- read_csv("PUSH_actigraph_geo_wide_8.7.25.csv")
+# push_long <- read_csv("PUSH_long_geo.csv")
 ```
 
-## Wide Descriptive Stats
+# Merging long and wide data sets
 
-```{r}
-# amount of actigraph days that are completed
-unique(push_wide$C1_ACTI_SL_Interval)
-
-parts <- push_wide %>% select(ParticipantID, C1_ACTI_SL_Interval) 
-parts
-```
-
-## Long Descriptive Stats
-
-```{r}
-# amount of antiactical days that are completed
-table(push_long$C_ACTI_Interval)
-
-table(push_long$C_ACTI_Yes) #only 1s, so all actigraph are completed
-
-push_long$C_DD_Yes # 0 and 1; 0 is no daily diary
-
-table(push_long$ParticipantID)
-```
-
-### left join
+For the PUSH data, there is a wide dataset with all the survey information for the participants of the study. The long dataset has day-by-day data for metrics from each night of sleep for the participants. These datasets were merged into a single dataset.  The merged file is named "PUSH_Sleep_merged.csv".  This file contained 204 rows and 1179 columns.  There are 29 unique participant IDs all of whom have either 6, 7, or 8 measured days with the majority (20 out of 29) having 7 days measured.  
 
 ```{r}
 # Perform a left join
 all <- left_join(push_long, push_wide, by = "ParticipantID")
+dim(all)
+all %>% group_by(ParticipantID) %>% summarize(days = n()) 
+
+all %>% group_by(ParticipantID) %>% summarize(days = n()) %>% ungroup() %>% group_by(days) %>% summarize(n = n())
 
 #Output all 
-#write.csv()
+#write.csv(all, file = "/Users/gregorymatthews/Dropbox/PUSH-Sleep_git/data/PUSH_Sleep_merged.csv", row.names = FALSE)
 ```
 
-## Correlation Matrix
+
+# Correlation Matrix
+Then a correlation matrix was created for the variables of interest (dependent variables, covariates, and fixed effects). On the correlation matrix, darker colors (blue for positive; red for negative correlation) and bigger squares mean a stronger correlation.  The area of the correlation matrix of most interest is the upper right most rectangle indicating correlations between the sleep variables (labeled "dependent variables") and the environment variables (labeled "fixed effects").
+
+## Variables of interest
 
 **DVs (sleep variables with models run for each sleep DV):**
 
@@ -135,9 +131,6 @@ Sleep Environment Inventory
 3.  SEI Comfort Subscale \[interpret so that higher score means more comfortable environment\] (C_SEI_C)
 
 ```{r}
-vars <- all %>% select(C1_ACTI_SL_SleepTimeAvg)
-
-
 all %>%
   select(
     SleepTimeAvg = C1_ACTI_SL_SleepTimeAvg,
@@ -166,10 +159,5 @@ all %>%
     C_SEI_SD,
     C_SEI_C
   ) %>% cor(use = "pairwise.complete.obs") %>% corrplot(method = "square", tl.cex = 0.5, addCoef.col = "black", number.cex = 0.3) %>% corrRect(name = c("SleepTimeAvg","age","COItotal","C_SEI_C"))
-
-
-#C1_ACTI_SL_WTmean)
-
-#, C_ACTI_SleepOnsetTime_mean, C_ACTI_EfficiencyAvg, C_ACTI_WasoAvg, C_ACTI_SleepTime_sd, C_ACTI_WTsd, C_ACTI_SleepOnsetTime_sd)
-
 ```
+
