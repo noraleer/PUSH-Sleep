@@ -19,11 +19,10 @@ The two main goals of this exploratory analysis are to:
 library(corrplot)
 library(tidyverse)
 
-push_wide <- read_csv("./data/PUSH_actigraph_geo_wide_8.7.25.csv")
-push_long <- read_csv("./data/PUSH_long_geo.csv")
-
-# push_wide <- read_csv("PUSH_actigraph_geo_wide_8.7.25.csv")
-# push_long <- read_csv("PUSH_long_geo.csv")
+# push_wide <- read_csv("./data/PUSH_actigraph_geo_wide_8.7.25.csv")
+# push_long <- read_csv("./data/PUSH_long_geo.csv")
+push_wide <- read_csv("PUSH_actigraph_geo_wide_8.7.25.csv")
+push_long <- read_csv("PUSH_long_geo.csv")
 ```
 
 # Merging long and wide data sets
@@ -138,8 +137,9 @@ all %>%
     SOT_mean = C1_ACTI_SleepOnsetTime_mean,
     EfficiencyAvg = C1_ACTI_SL_EfficiencyAvg,
     WasoAvg = C1_ACTI_SL_WasoAvg,
-    WakeTimeSd = C1_ACTI_SL_WakeTimeSd,
     SleepTimeSd = C1_ACTI_SL_SleepTimeSd,
+    WakeTimeSd = C1_ACTI_SL_WakeTimeSd,
+    SleepOnsetSd = C1_ACTI_SL_SleepTimeSd,
     age = c_demo_2_v2,
     sex = c_demo_8_v2,
     grade_in_school = c_demo_6_v2,
@@ -161,3 +161,14 @@ all %>%
   ) %>% cor(use = "pairwise.complete.obs") %>% corrplot(method = "square", tl.cex = 0.5, addCoef.col = "black", number.cex = 0.3) %>% corrRect(name = c("SleepTimeAvg","age","COItotal","C_SEI_C"))
 ```
 
+Notably, there is a moderate positive correlation between average sleep time and COI total and COI Social and Economic. There is a moderate negative correlation between average sleep time and parent report of family cohesion.
+
+There is a moderate positive correlation between mean wake time and SEI Sleep Aids Subscale. Mean wake time does not have a significant negative correlation with any environmental variables.
+
+Falling asleep time has a moderate positive correlation with SEI Sleep Aids Subscale, but no significant negative correlations with another variable.
+
+Average efficiency has a moderate positive correlation with MESA Family Trouble Subscale and a moderate negative correlation with parent report of family cohesion.
+
+Wake time standard devation has a moderate positive correlation with MESA Economic Stress Subscale, but it does not have a significant negative correlation with any environmental variables.
+
+Awakenings quality (WASO), sleep duration standard deviation, and sleep onset time standard deviation do not have any significant correlations with environmental variables.
