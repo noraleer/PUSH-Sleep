@@ -1,16 +1,17 @@
 ---
 title: "PUSH data correlation analysis"
-format: html
+format: pdf
 editor: visual
 author: 
   - Josie Peterburs
   - Nora Reinhardt
-  - Gregory J.. Matthews
+  - Gregory J. Matthews
 ---
 
 # Introduction 
 
 The two main goals of this exploratory analysis are to: 
+
   1. Create a single data set that merges daily data with individual survey level data.  
   2. Examine bivariate correlations between the identified sleep variables (e.g. average sleep time, etc.), the covariates (e.g. age, sex, etc.), and the environmental variables (COI index, P_COHESION, etc.). 
 
@@ -19,10 +20,10 @@ The two main goals of this exploratory analysis are to:
 library(corrplot)
 library(tidyverse)
 
-# push_wide <- read_csv("./data/PUSH_actigraph_geo_wide_8.7.25.csv")
-# push_long <- read_csv("./data/PUSH_long_geo.csv")
-push_wide <- read_csv("PUSH_actigraph_geo_wide_8.7.25.csv")
-push_long <- read_csv("PUSH_long_geo.csv")
+push_wide <- read_csv("./data/PUSH_actigraph_geo_wide_8.7.25.csv")
+push_long <- read_csv("./data/PUSH_long_geo.csv")
+# push_wide <- read_csv("PUSH_actigraph_geo_wide_8.7.25.csv")
+# push_long <- read_csv("PUSH_long_geo.csv")
 ```
 
 # Merging long and wide data sets
