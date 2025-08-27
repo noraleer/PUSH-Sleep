@@ -176,6 +176,8 @@ Awakenings quality (WASO), sleep duration standard deviation, and sleep onset ti
 
 BASIC MODEL: ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType
 
+\newpage
+
 # Models 
 
 ## Daily
