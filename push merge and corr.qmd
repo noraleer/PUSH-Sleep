@@ -1053,137 +1053,97 @@ summary(all$C_ACTI_SleepTime_sd)
 ################################
 #Model 1.1: COI Total
 ################################
-mod1.1_dur_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_3.0, data = weekly)
+mod1.1_dur_var <- lm(log(C_ACTI_SleepTime_sd) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_3.0, data = weekly)
 summary(mod1.1_dur_var)
 ci <- confint(mod1.1_dur_var)
 print(ci)
 
-plot(mod1.1_dur_var, type=c("p","smooth"), col.line=1)
-
-plot(mod1.1_dur_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod1.1_dur_var)
+plot(mod1.1_dur_var, 1)
+plot(mod1.1_dur_var, 2)
 
 
 ################################
 #Model 1.2: COI Domains
 ################################
-mod1.2_dur_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0, data = weekly)
+mod1.2_dur_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0, data = weekly)
 summary(mod1.2_dur_var)
 ci <- confint(mod1.2_dur_var)
 print(ci)
 
-plot(mod1.2_dur_var, type=c("p","smooth"), col.line=1)
-
-plot(mod1.2_dur_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod1.2_dur_var)
+plot(mod1.2_dur_var, 1)
+plot(mod1.2_dur_var, 2)
 
 
 ################################
 #Model 2.1: Family Cohesion
 ################################
-mod2.1_dur_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + P_COHESION, data = weekly)
+mod2.1_dur_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + P_COHESION, data = weekly)
 summary(mod2.1_dur_var)
 ci <- confint(mod2.1_dur_var)
 print(ci)
 
-plot(mod2.1_dur_var, type=c("p","smooth"), col.line=1)
-
-plot(mod2.1_dur_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod2.1_dur_var)
+plot(mod2.1_dur_var, 1)
+plot(mod2.1_dur_var, 2)
 
 
 ################################
 #Model 2.2: MESA
 ################################
-mod2.2_dur_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_MESA_FT + C_MESA_ES, data = weekly)
+mod2.2_dur_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_MESA_FT + C_MESA_ES, data = weekly)
 summary(mod2.2_dur_var)
 ci <- confint(mod2.2_dur_var)
 print(ci)
 
-plot(mod2.2_dur_var, type=c("p","smooth"), col.line=1)
-
-plot(mod2.2_dur_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod2.2_dur_var)
+plot(mod2.2_dur_var, 1)
+plot(mod2.2_dur_var, 2)
 
 
 ################################
 #Model 2.3: Adol CHAOS
 ################################
-mod2.3_dur_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_CHAOS, data = weekly)
+mod2.3_dur_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_CHAOS, data = weekly)
 summary(mod2.3_dur_var)
 ci <- confint(mod2.3_dur_var)
 print(ci)
 
-plot(mod2.3_dur_var, type=c("p","smooth"), col.line=1)
-
-plot(mod2.3_dur_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod2.3_dur_var)
+plot(mod2.3_dur_var, 1)
+plot(mod2.3_dur_var, 2)
 
 
 ################################
 #Model 3.1: Sleep Disruptions
 ################################
-mod3.1_dur_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2, data = weekly)
+mod3.1_dur_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2, data = weekly)
 summary(mod3.1_dur_var)
 ci <- confint(mod3.1_dur_var)
 print(ci)
 
-plot(mod3.1_dur_var, type=c("p","smooth"), col.line=1)
-
-plot(mod3.1_dur_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3.1_dur_var)
+plot(mod3.1_dur_var, 1)
+plot(mod3.1_dur_var, 2)
 
 
 ################################
 #Model 3.2: Sleep Quiet
 ################################
-mod3.2_dur_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_8_v2, data = weekly)
+mod3.2_dur_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_8_v2, data = weekly)
 summary(mod3.2_dur_var)
 ci <- confint(mod3.2_dur_var)
 print(ci)
 
-plot(mod3.2_dur_var, type=c("p","smooth"), col.line=1)
-
-plot(mod3.2_dur_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3.2_dur_var)
+plot(mod3.2_dur_var, 1)
+plot(mod3.2_dur_var, 2)
 
 
 ################################
 #Model 3.3: Sleep Dark
 ################################
-mod3.3_dur_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_11_v2, data = weekly)
+mod3.3_dur_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_11_v2, data = weekly)
 summary(mod3.3_dur_var)
 ci <- confint(mod3.3_dur_var)
 print(ci)
 
-plot(mod3.3_dur_var, type=c("p","smooth"), col.line=1)
-
-plot(mod3.3_dur_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3.3_dur_var)
+plot(mod3.3_dur_var, 1)
+plot(mod3.3_dur_var, 2)
 ```
 
 
@@ -1196,137 +1156,97 @@ summary(all$C_ACTI_WakeTime_sd)
 ################################
 #Model 1.1: COI Total
 ################################
-mod1.1_offset_var <- lmer(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_3.0, data = weekly)
+mod1.1_offset_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_3.0, data = weekly)
 summary(mod1.1_offset_var)
 ci <- confint(mod1.1_offset_var)
 print(ci)
 
-plot(mod1.1_offset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod1.1_offset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod1.1_offset_var)
+plot(mod1.1_offset_var, 1)
+plot(mod1.1_offset_var, 2)
 
 
 ################################
 #Model 1.2: COI Domains
 ################################
-mod1.2_offset_var <- lmer(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0, data = weekly)
+mod1.2_offset_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0, data = weekly)
 summary(mod1.2_offset_var)
 ci <- confint(mod1.2_offset_var)
 print(ci)
 
-plot(mod1.2_offset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod1.2_offset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod1.2_offset_var)
+plot(mod1.2_offset_var, 1)
+plot(mod1.2_offset_var, 2)
 
 
 ################################
 #Model 2.1: Family Cohesion
 ################################
-mod2.1_offset_var <- lmer(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + P_COHESION, data = weekly)
+mod2.1_offset_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + P_COHESION, data = weekly)
 summary(mod2.1_offset_var)
 ci <- confint(mod2.1_offset_var)
 print(ci)
 
-plot(mod2.1_offset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod2.1_offset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod2.1_offset_var)
+plot(mod2.1_offset_var, 1)
+plot(mod2.1_offset_var, 2)
 
 
 ################################
 #Model 2.2: MESA
 ################################
-mod2.2_offset_var <- lmer(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_MESA_FT + C_MESA_ES, data = weekly)
+mod2.2_offset_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_MESA_FT + C_MESA_ES, data = weekly)
 summary(mod2.2_offset_var)
 ci <- confint(mod2.2_offset_var)
 print(ci)
 
-plot(mod2.2_offset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod2.2_offset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod2.2_offset_var)
+plot(mod2.2_offset_var, 1)
+plot(mod2.2_offset_var, 2)
 
 
 ################################
 #Model 2.3: Adol CHAOS
 ################################
-mod2.3_offset_var <- lmer(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_CHAOS, data = weekly)
+mod2.3_offset_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_CHAOS, data = weekly)
 summary(mod2.3_offset_var)
 ci <- confint(mod2.3_offset_var)
 print(ci)
 
-plot(mod2.3_offset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod2.3_offset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod2.3_offset_var)
+plot(mod2.3_offset_var, 1)
+plot(mod2.3_offset_var, 2)
 
 
 ################################
 #Model 3.1: Sleep Disruptions
 ################################
-mod3.1_offset_var <- lmer(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2, data = weekly)
+mod3.1_offset_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2, data = weekly)
 summary(mod3.1_offset_var)
 ci <- confint(mod3.1_offset_var)
 print(ci)
 
-plot(mod3.1_offset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod3.1_offset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3.1_offset_var)
+plot(mod3.1_offset_var, 1)
+plot(mod3.1_offset_var, 2)
 
 
 ################################
 #Model 3.2: Sleep Quiet
 ################################
-mod3.2_offset_var <- lmer(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_8_v2, data = weekly)
+mod3.2_offset_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_8_v2, data = weekly)
 summary(mod3.2_offset_var)
 ci <- confint(mod3.2_offset_var)
 print(ci)
 
-plot(mod3.2_offset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod3.2_offset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3.2_offset_var)
+plot(mod3.2_offset_var, 1)
+plot(mod3.2_offset_var, 2)
 
 
 ################################
 #Model 3.3: Sleep Dark
 ################################
-mod3.3_offset_var <- lmer(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_11_v2, data = weekly)
+mod3.3_offset_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_11_v2, data = weekly)
 summary(mod3.3_offset_var)
 ci <- confint(mod3.3_offset_var)
 print(ci)
 
-plot(mod3.3_offset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod3.3_offset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3.3_offset_var)
+plot(mod3.3_offset_var, 1)
+plot(mod3.3_offset_var, 2)
 ```
 
 
@@ -1339,135 +1259,95 @@ summary(all$C_ACTI_SleepTime_sd)
 ################################
 #Model 1.1: COI Total
 ################################
-mod1.1_onset_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_3.0, data = weekly)
+mod1.1_onset_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_3.0, data = weekly)
 summary(mod1.1_onset_var)
 ci <- confint(mod1.1_onset_var)
 print(ci)
 
-plot(mod1.1_onset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod1.1_onset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod1.1_onset_var)
+plot(mod1.1_onset_var, 1)
+plot(mod1.1_onset_var, 2)
 
 
 ################################
 #Model 1.2: COI Domains
 ################################
-mod1.2_onset_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0, data = weekly)
+mod1.2_onset_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0, data = weekly)
 summary(mod1.2_onset_var)
 ci <- confint(mod1.2_onset_var)
 print(ci)
 
-plot(mod1.2_onset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod1.2_onset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod1.2_onset_var)
+plot(mod1.2_onset_var, 1)
+plot(mod1.2_onset_var, 2)
 
 
 ################################
 #Model 2.1: Family Cohesion
 ################################
-mod2.1_onset_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + P_COHESION, data = weekly)
+mod2.1_onset_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + P_COHESION, data = weekly)
 summary(mod2.1_onset_var)
 ci <- confint(mod2.1_onset_var)
 print(ci)
 
-plot(mod2.1_onset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod2.1_onset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod2.1_onset_var)
+plot(mod2.1_onset_var, 1)
+plot(mod2.1_onset_var, 2)
 
 
 ################################
 #Model 2.2: MESA
 ################################
-mod2.2_onset_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_MESA_FT + C_MESA_ES, data = weekly)
+mod2.2_onset_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_MESA_FT + C_MESA_ES, data = weekly)
 summary(mod2.2_onset_var)
 ci <- confint(mod2.2_onset_var)
 print(ci)
 
-plot(mod2.2_onset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod2.2_onset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod2.2_onset_var)
+plot(mod2.2_onset_var, 1)
+plot(mod2.2_onset_var, 2)
 
 
 ################################
 #Model 2.3: Adol CHAOS
 ################################
-mod2.3_onset_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_CHAOS, data = weekly)
+mod2.3_onset_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_CHAOS, data = weekly)
 summary(mod2.3_onset_var)
 ci <- confint(mod2.3_onset_var)
 print(ci)
 
-plot(mod2.3_onset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod2.3_onset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod2.3_onset_var)
+plot(mod2.3_onset_var, 1)
+plot(mod2.3_onset_var, 2)
 
 
 ################################
 #Model 3.1: Sleep Disruptions
 ################################
-mod3.1_onset_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2, data = weekly)
+mod3.1_onset_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2, data = weekly)
 summary(mod3.1_onset_var)
 ci <- confint(mod3.1_onset_var)
 print(ci)
 
-plot(mod3.1_onset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod3.1_onset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3.1_onset_var)
+plot(mod3.1_onset_var, 1)
+plot(mod3.1_onset_var, 2)
 
 
 ################################
 #Model 3.2: Sleep Quiet
 ################################
-mod3.2_onset_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_8_v2, data = weekly)
+mod3.2_onset_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_8_v2, data = weekly)
 summary(mod3.2_onset_var)
 ci <- confint(mod3.2_onset_var)
 print(ci)
 
-plot(mod3.2_onset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod3.2_onset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3.2_onset_var)
+plot(mod3.2_onset_var, 1)
+plot(mod3.2_onset_var, 2)
 
 
 ################################
 #Model 3.3: Sleep Dark
 ################################
-mod3.3_onset_var <- lmer(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_11_v2, data = weekly)
+mod3.3_onset_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_11_v2, data = weekly)
 summary(mod3.3_onset_var)
 ci <- confint(mod3.3_onset_var)
 print(ci)
 
-plot(mod3.3_onset_var, type=c("p","smooth"), col.line=1)
-
-plot(mod3.3_onset_var,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3.3_onset_var)
+plot(mod3.3_onset_var, 1)
+plot(mod3.3_onset_var, 2)
 ```
