@@ -325,16 +325,16 @@ plot(mod3.3_duration,
 lattice::qqmath(mod3.3_duration)
 ```
 
-### Offset/Wake Time (C_ACTI_WakeTime)
+### Offset/Wake Time (C_ACTI_WT_DEC)
 
 ```{r}
-hist(all$C_ACTI_WakeTime)
-summary(all$C_ACTI_WakeTime)
+hist(all$C_ACTI_WT_DEC)
+summary(all$C_ACTI_WT_DEC)
 
 ################################
 #Model 1.1: COI Total
 ################################
-mod1.1_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_3.0 + (1|ParticipantID), data = all)
+mod1.1_waketime <- lmer(sqrt(C_ACTI_WT_DEC) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_3.0 + (1|ParticipantID), data = all)
 summary(mod1.1_waketime)
 ci <- confint(mod1.1_waketime)
 print(ci)
@@ -351,7 +351,7 @@ lattice::qqmath(mod1.1_waketime)
 ################################
 #Model 1.2: COI Domains
 ################################
-mod1.2_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = all)
+mod1.2_waketime <- lmer(sqrt(C_ACTI_WT_DEC) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = all)
 summary(mod1.2_waketime)
 ci <- confint(mod1.2_waketime)
 print(ci)
@@ -368,7 +368,7 @@ lattice::qqmath(mod1.2_waketime)
 ################################
 #Model 2.1: Family Cohesion
 ################################
-mod2.1_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + P_COHESION + (1|ParticipantID), data = all)
+mod2.1_waketime <- lmer(sqrt(C_ACTI_WT_DEC) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + P_COHESION + (1|ParticipantID), data = all)
 summary(mod2.1_waketime)
 ci <- confint(mod2.1_waketime)
 print(ci)
@@ -385,7 +385,7 @@ lattice::qqmath(mod2.1_waketime)
 ################################
 #Model 2.2: MESA
 ################################
-mod2.2_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_MESA_FT + C_MESA_ES + (1|ParticipantID), data = all)
+mod2.2_waketime <- lmer(sqrt(C_ACTI_WT_DEC) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_MESA_FT + C_MESA_ES + (1|ParticipantID), data = all)
 summary(mod2.2_waketime)
 ci <- confint(mod2.2_waketime)
 print(ci)
@@ -402,7 +402,7 @@ lattice::qqmath(mod2.2_waketime)
 ################################
 #Model 2.3: Adol CHAOS
 ################################
-mod2.3_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_CHAOS + (1|ParticipantID), data = all)
+mod2.3_waketime <- lmer(sqrt(C_ACTI_WT_DEC) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_CHAOS + (1|ParticipantID), data = all)
 summary(mod2.3_waketime)
 ci <- confint(mod2.3_waketime)
 print(ci)
@@ -419,7 +419,7 @@ lattice::qqmath(mod2.3_waketime)
 ################################
 #Model 3.1: Sleep Disruptions
 ################################
-mod3.1_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + (1|ParticipantID), data = all)
+mod3.1_waketime <- lmer(sqrt(C_ACTI_WT_DEC) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + (1|ParticipantID), data = all)
 summary(mod3.1_waketime)
 ci <- confint(mod3.1_waketime)
 print(ci)
@@ -436,7 +436,7 @@ lattice::qqmath(mod3.1_waketime)
 ################################
 #Model 3.2: Sleep Quiet
 ################################
-mod3.2_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_8_v2 + (1|ParticipantID), data = all)
+mod3.2_waketime <- lmer(sqrt(C_ACTI_WT_DEC) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_8_v2 + (1|ParticipantID), data = all)
 summary(mod3.2_duration)
 ci <- confint(mod3.2_waketime)
 print(ci)
@@ -453,7 +453,7 @@ lattice::qqmath(mod3.2_waketime)
 ################################
 #Model 3.3: Sleep Dark
 ################################
-mod3.3_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_11_v2 + (1|ParticipantID), data = all)
+mod3.3_waketime <- lmer(sqrt(C_ACTI_WT_DEC) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_11_v2 + (1|ParticipantID), data = all)
 summary(mod3.3_waketime)
 ci <- confint(mod3.3_waketime)
 print(ci)
