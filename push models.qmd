@@ -320,7 +320,7 @@ lattice::qqmath(mod2_offset)
 ################################
 #Model 3: Sleep Environment Characteristics
 ################################
-mod3_offset <- lmer(C_ACTI_WT_DEC ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2 + c_se_11_v2 + (1|ParticipantID), data = models)
+mod3_offset <- lmer(C_ACTI_WT_DEC ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2 + (1|ParticipantID), data = models)
 summary(mod3_offset)
 ci <- confint(mod3_offset)
 print(ci)
