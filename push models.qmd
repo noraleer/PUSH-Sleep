@@ -18,6 +18,8 @@ The two main goals of this exploratory analysis are to:
 ```{r message = FALSE, warning=FALSE}
 library(corrplot)
 library(tidyverse)
+library(lme4)
+library(easystats)
 
 # push_wide <- read_csv("./data/PUSH_actigraph_geo_wide_8.7.25.csv")
 # push_long <- read_csv("./data/PUSH_long_geo.csv")
@@ -221,15 +223,14 @@ BASIC MODEL: includes c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType
 ### Duration (C_ACTI_Duration)
 
 ```{r}
-library(lme4)
-
 hist(all$C_ACTI_Duration)
 summary(all$C_ACTI_Duration)
+
 
 ################################
 #Model 1: Neighborhood Factors
 ################################
-mod1_duration <- lmer(C_ACTI_Duration ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models)
+mod1_duration <- lmer(C_ACTI_Duration ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models %>% filter(c_demo_6_v2 %in% c(1,2,3,4,5)))
 summary(mod1_duration)
 ci <- confint(mod1_duration)
 print(ci)
@@ -263,7 +264,7 @@ lattice::qqmath(mod2_duration)
 ################################
 #Model 3: Sleep Environment Characteristics
 ################################
-mod3_duration <- lmer(C_ACTI_Duration ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2 + (1|ParticipantID), data = models)
+mod3_duration <- lmer(C_ACTI_Duration ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2 + c_se_11_v2 + (1|ParticipantID), data = models)
 summary(mod3_duration)
 ci <- confint(mod3_duration)
 print(ci)
@@ -276,6 +277,8 @@ plot(mod3_duration,
 
 lattice::qqmath(mod3_duration)
 ```
+
+\newpage
 
 ### Offset/Wake Time (C_ACTI_WT_DEC)
 
@@ -334,6 +337,8 @@ plot(mod3_offset,
 lattice::qqmath(mod3_offset)
 ```
 
+\newpage
+
 ### Onset/Falling Asleep (C_ACTI_SOL)
 
 ```{r}
@@ -377,7 +382,7 @@ lattice::qqmath(mod2_onset1)
 ################################
 #Model 3: Sleep Environment Characteristics
 ################################
-mod3_onset1 <- lmer(C_ACTI_SOL ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2 + c_se_11_v2 + (1|ParticipantID), data = models)
+mod3_onset1 <- lmer(C_ACTI_SOL ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2 + (1|ParticipantID), data = models)
 summary(mod3_onset1)
 ci <- confint(mod3_onset1)
 print(ci)
@@ -390,6 +395,8 @@ plot(mod3_onset1,
 
 lattice::qqmath(mod3_onset1)
 ```
+
+\newpage
 
 ### Onset/Falling Asleep 2 (C_ACTI_SleepOnsetTime_TRM)
 
@@ -434,7 +441,7 @@ lattice::qqmath(mod2_onset2)
 ################################
 #Model 3: Sleep Environment Characteristics
 ################################
-mod3_onset2 <- lmer(C_ACTI_SOL ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2 + c_se_11_v2 + (1|ParticipantID), data = models)
+mod3_onset2 <- lmer(C_ACTI_SOL ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2 + (1|ParticipantID), data = models)
 summary(mod3_onset2)
 ci <- confint(mod3_onset2)
 print(ci)
@@ -447,6 +454,8 @@ plot(mod3_onset2,
 
 lattice::qqmath(mod3_onset2)
 ```
+
+\newpage
 
 ### Efficiency (C_ACTI_Efficiency)
 
@@ -491,7 +500,7 @@ lattice::qqmath(mod2_efficiency)
 ################################
 #Model 3: Sleep Environment Characteristics
 ################################
-mod3_efficiency <- lmer(C_ACTI_Efficiency ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2 + c_se_11_v2 + (1|ParticipantID), data = models)
+mod3_efficiency <- lmer(C_ACTI_Efficiency ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2 + (1|ParticipantID), data = models)
 summary(mod3_efficiency)
 ci <- confint(mod3_efficiency)
 print(ci)
@@ -504,6 +513,8 @@ plot(mod3_efficiency,
 
 lattice::qqmath(mod3_efficiency)
 ```
+
+\newpage
 
 ### Awakenings (C_ACTI_Waso)
 
@@ -548,7 +559,7 @@ lattice::qqmath(mod2_waso)
 ################################
 #Model 3: Sleep Environment Characteristics
 ################################
-mod3_waso <- lmer(C_ACTI_Waso ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2 + c_se_11_v2 + (1|ParticipantID), data = models)
+mod3_waso <- lmer(C_ACTI_Waso ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2 + (1|ParticipantID), data = models)
 summary(mod3_waso)
 ci <- confint(mod3_waso)
 print(ci)
@@ -562,11 +573,14 @@ plot(mod3_waso,
 lattice::qqmath(mod3_waso)
 ```
 
+\newpage
+
 ## Weekly
 
 ```{r}
 weekly <- models %>% filter(StudyDay == 1)
 ```
+
 
 ### Duration Variability (C_ACTI_SleepTime_sd)
 
@@ -601,7 +615,7 @@ plot(mod2_dur_var, 2)
 ################################
 #Model 3: Sleep Environment Characteristics
 ################################
-mod3_dur_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2 + c_se_11_v2, data = weekly)
+mod3_dur_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2, data = weekly)
 summary(mod3_dur_var)
 ci <- confint(mod3_dur_var)
 print(ci)
@@ -610,13 +624,51 @@ plot(mod3_dur_var, 1)
 plot(mod3_dur_var, 2)
 ```
 
+\newpage
+
 ### Offset Variability (C_ACTI_WakeTime_sd)
 
 ```{r}
 hist(all$C_ACTI_WakeTime_sd)
 summary(all$C_ACTI_WakeTime_sd)
 
+################################
+#Model 1: Neighborhood Factors
+################################
+mod1_off_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0, data = weekly)
+summary(mod1_off_var)
+ci <- confint(mod1_off_var)
+print(ci)
+
+plot(mod1_off_var, 1)
+plot(mod1_off_var, 2)
+
+
+################################
+#Model 2: Family Factors
+################################
+mod2_off_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
+summary(mod2_off_var)
+ci <- confint(mod2_off_var)
+print(ci)
+
+plot(mod2_off_var, 1)
+plot(mod2_off_var, 2)
+
+
+################################
+#Model 3: Sleep Environment Characteristics
+################################
+mod3_off_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2, data = weekly)
+summary(mod3_off_var)
+ci <- confint(mod3_off_var)
+print(ci)
+
+plot(mod3_off_var, 1)
+plot(mod3_off_var, 2)
 ```
+
+\newpage
 
 ### Onset Variability (C_ACTI_SleepTime_sd)
 
@@ -624,5 +676,38 @@ summary(all$C_ACTI_WakeTime_sd)
 hist(all$C_ACTI_SleepTime_sd)
 summary(all$C_ACTI_SleepTime_sd)
 
+################################
+#Model 1: Neighborhood Factors
+################################
+mod1_on_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0, data = weekly)
+summary(mod1_on_var)
+ci <- confint(mod1_on_var)
+print(ci)
 
+plot(mod1_on_var, 1)
+plot(mod1_on_var, 2)
+
+
+################################
+#Model 2: Family Factors
+################################
+mod2_on_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
+summary(mod2_on_var)
+ci <- confint(mod2_on_var)
+print(ci)
+
+plot(mod2_on_var, 1)
+plot(mod2_on_var, 2)
+
+
+################################
+#Model 3: Sleep Environment Characteristics
+################################
+mod3_on_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2, data = weekly)
+summary(mod3_on_var)
+ci <- confint(mod3_on_var)
+print(ci)
+
+plot(mod3_on_var, 1)
+plot(mod3_on_var, 2)
 ```
