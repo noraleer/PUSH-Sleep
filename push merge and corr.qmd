@@ -8,13 +8,12 @@ author:
   - Gregory J. Matthews
 ---
 
-# Introduction 
+# Introduction
 
-The two main goals of this exploratory analysis are to: 
+The two main goals of this exploratory analysis are to:
 
-  1. Create a single data set that merges daily data with individual survey level data.  
-  2. Examine bivariate correlations between the identified sleep variables (e.g. average sleep time, etc.), the covariates (e.g. age, sex, etc.), and the environmental variables (COI index, P_COHESION, etc.). 
-
+1.  Create a single data set that merges daily data with individual survey level data.\
+2.  Examine bivariate correlations between the identified sleep variables (e.g. average sleep time, etc.), the covariates (e.g. age, sex, etc.), and the environmental variables (COI index, P_COHESION, etc.).
 
 ```{r message = FALSE, warning=FALSE}
 library(corrplot)
@@ -28,7 +27,7 @@ push_long <- read_csv("PUSH_long_geo.csv")
 
 # Merging long and wide data sets
 
-For the PUSH data, there is a wide dataset with all the survey information for the participants of the study. The long dataset has day-by-day data for metrics from each night of sleep for the participants. These datasets were merged into a single dataset.  The merged file is named "PUSH_Sleep_merged.csv".  This file contained 204 rows and 1179 columns.  There are 29 unique participant IDs all of whom have either 6, 7, or 8 measured days with the majority (20 out of 29) having 7 days measured.  
+For the PUSH data, there is a wide dataset with all the survey information for the participants of the study. The long dataset has day-by-day data for metrics from each night of sleep for the participants. These datasets were merged into a single dataset. The merged file is named "PUSH_Sleep_merged.csv". This file contained 204 rows and 1179 columns. There are 29 unique participant IDs all of whom have either 6, 7, or 8 measured days with the majority (20 out of 29) having 7 days measured.
 
 ```{r}
 # Perform a left join
@@ -42,9 +41,9 @@ all %>% group_by(ParticipantID) %>% summarize(days = n()) %>% ungroup() %>% grou
 #write.csv(all, file = "/Users/gregorymatthews/Dropbox/PUSH-Sleep_git/data/PUSH_Sleep_merged.csv", row.names = FALSE)
 ```
 
-
 # Correlation Matrix
-Then a correlation matrix was created for the variables of interest (dependent variables, covariates, and fixed effects). On the correlation matrix, darker colors (blue for positive; red for negative correlation) and bigger squares mean a stronger correlation.  The area of the correlation matrix of most interest is the upper right most rectangle indicating correlations between the sleep variables (labeled "dependent variables") and the environment variables (labeled "fixed effects").
+
+Then a correlation matrix was created for the variables of interest (dependent variables, covariates, and fixed effects). On the correlation matrix, darker colors (blue for positive; red for negative correlation) and bigger squares mean a stronger correlation. The area of the correlation matrix of most interest is the upper right most rectangle indicating correlations between the sleep variables (labeled "dependent variables") and the environment variables (labeled "fixed effects").
 
 ## Variables of interest
 
@@ -174,11 +173,11 @@ Wake time standard deviation has a moderate positive correlation with MESA Econo
 
 Awakenings quality (WASO), sleep duration standard deviation, and sleep onset time standard deviation do not have any significant correlations with environmental variables.
 
-BASIC MODEL: ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType
+BASIC MODEL: \~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType
 
 \newpage
 
-# Models 
+# Models
 
 ## Daily
 
@@ -335,7 +334,7 @@ summary(all$C_ACTI_WakeTime)
 ################################
 #Model 1.1: COI Total
 ################################
-mod1.1_waketime <- lmer(C_ACTI_WakeTime ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_3.0 + (1|ParticipantID), data = all)
+mod1.1_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_3.0 + (1|ParticipantID), data = all)
 summary(mod1.1_waketime)
 ci <- confint(mod1.1_waketime)
 print(ci)
@@ -352,7 +351,7 @@ lattice::qqmath(mod1.1_waketime)
 ################################
 #Model 1.2: COI Domains
 ################################
-mod1.2_waketime <- lmer(C_ACTI_WakeTime ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = all)
+mod1.2_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = all)
 summary(mod1.2_waketime)
 ci <- confint(mod1.2_waketime)
 print(ci)
@@ -369,7 +368,7 @@ lattice::qqmath(mod1.2_waketime)
 ################################
 #Model 2.1: Family Cohesion
 ################################
-mod2.1_waketime <- lmer(C_ACTI_WakeTime ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + P_COHESION + (1|ParticipantID), data = all)
+mod2.1_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + P_COHESION + (1|ParticipantID), data = all)
 summary(mod2.1_waketime)
 ci <- confint(mod2.1_waketime)
 print(ci)
@@ -386,7 +385,7 @@ lattice::qqmath(mod2.1_waketime)
 ################################
 #Model 2.2: MESA
 ################################
-mod2.2_waketime <- lmer(C_ACTI_WakeTime ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_MESA_FT + C_MESA_ES + (1|ParticipantID), data = all)
+mod2.2_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_MESA_FT + C_MESA_ES + (1|ParticipantID), data = all)
 summary(mod2.2_waketime)
 ci <- confint(mod2.2_waketime)
 print(ci)
@@ -403,7 +402,7 @@ lattice::qqmath(mod2.2_waketime)
 ################################
 #Model 2.3: Adol CHAOS
 ################################
-mod2.3_waketime <- lmer(C_ACTI_WakeTime ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_CHAOS + (1|ParticipantID), data = all)
+mod2.3_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + C_CHAOS + (1|ParticipantID), data = all)
 summary(mod2.3_waketime)
 ci <- confint(mod2.3_waketime)
 print(ci)
@@ -420,7 +419,7 @@ lattice::qqmath(mod2.3_waketime)
 ################################
 #Model 3.1: Sleep Disruptions
 ################################
-mod3.1_waketime <- lmer(C_ACTI_WakeTime ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + (1|ParticipantID), data = all)
+mod3.1_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + (1|ParticipantID), data = all)
 summary(mod3.1_waketime)
 ci <- confint(mod3.1_waketime)
 print(ci)
@@ -437,7 +436,7 @@ lattice::qqmath(mod3.1_waketime)
 ################################
 #Model 3.2: Sleep Quiet
 ################################
-mod3.2_waketime <- lmer(C_ACTI_WakeTime ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_8_v2 + (1|ParticipantID), data = all)
+mod3.2_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_8_v2 + (1|ParticipantID), data = all)
 summary(mod3.2_duration)
 ci <- confint(mod3.2_waketime)
 print(ci)
@@ -454,7 +453,7 @@ lattice::qqmath(mod3.2_waketime)
 ################################
 #Model 3.3: Sleep Dark
 ################################
-mod3.3_waketime <- lmer(C_ACTI_WakeTime ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_11_v2 + (1|ParticipantID), data = all)
+mod3.3_waketime <- lmer(sqrt(C_ACTI_WakeTime) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_11_v2 + (1|ParticipantID), data = all)
 summary(mod3.3_waketime)
 ci <- confint(mod3.3_waketime)
 print(ci)
@@ -610,7 +609,6 @@ plot(mod3.3_onset,
 lattice::qqmath(mod3.3_onset)
 ```
 
-
 ### Onset/Falling Asleep 2 (C_ACTI_SleepOnsetTime_TRM)
 
 ```{r}
@@ -752,7 +750,6 @@ plot(mod3.3_onset,
 
 lattice::qqmath(mod3.3_onset)
 ```
-
 
 ### Efficiency (C_ACTI_Efficiency)
 
@@ -896,7 +893,6 @@ plot(mod3.3_efficiency,
 lattice::qqmath(mod3.3_efficiency)
 ```
 
-
 ### Awakenings (C_ACTI_Waso)
 
 ```{r}
@@ -906,7 +902,7 @@ summary(all$C_ACTI_Waso)
 ################################
 #Model 1.1: COI Total
 ################################
-mod1.1_waso <- lmer(C_ACTI_Waso ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_3.0 + (1|ParticipantID), data = all)
+mod1.1_waso <- lmer(log1p(C_ACTI_Waso) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_3.0 + (1|ParticipantID), data = all)
 summary(mod1.1_waso)
 ci <- confint(mod1.1_waso)
 print(ci)
@@ -1045,7 +1041,6 @@ lattice::qqmath(mod3.3_waso)
 weekly <- all %>% filter(StudyDay == 1)
 ```
 
-
 ### Duration Variability (C_ACTI_SleepTime_sd)
 
 ```{r}
@@ -1148,7 +1143,6 @@ plot(mod3.3_dur_var, 1)
 plot(mod3.3_dur_var, 2)
 ```
 
-
 ### Offset Variability (C_ACTI_WakeTime_sd)
 
 ```{r}
@@ -1250,7 +1244,6 @@ print(ci)
 plot(mod3.3_offset_var, 1)
 plot(mod3.3_offset_var, 2)
 ```
-
 
 ### Onset Variability (C_ACTI_SleepTime_sd)
 
