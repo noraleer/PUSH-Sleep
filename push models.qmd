@@ -111,7 +111,7 @@ model <- vars %>% mutate(c_demo_6_v2 = case_when(
   c_demo_6_v2 == 3 ~ 10,
   c_demo_6_v2 == 4 ~ 11,
   c_demo_6_v2 == 5 ~ 12,
-  c_demo_6_v2 == 7 ~ 7))
+  c_demo_6_v2 == 7 ~ 8))
 table(model$c_demo_6_v2, useNA = "always")
 
 # C_DD_PM_DayType -- School or Summer
