@@ -10,16 +10,18 @@ author:
 
 # Introduction
 
-The two main goals of this exploratory analysis are to:
+The main goals of this exploratory analysis are to:
 
-1.  Create a single data set that merges daily data with individual survey level data.\
+1.  Create a single data set that merges daily data with individual survey level data.
 2.  Examine bivariate correlations between the identified sleep variables (e.g. average sleep time, etc.), the covariates (e.g. age, sex, etc.), and the environmental variables (COI index, P_COHESION, etc.).
+3. Create models for dependent variables of interest with independent variables that represent neighborhood factors, family factors, and sleep environment characteristics.
 
 ```{r message = FALSE, warning=FALSE}
 library(corrplot)
 library(tidyverse)
 library(lme4)
 library(easystats)
+library(lubridate)
 
 # push_wide <- read_csv("./data/PUSH_actigraph_geo_wide_8.7.25.csv")
 # push_long <- read_csv("./data/PUSH_long_geo.csv")
@@ -43,9 +45,107 @@ all %>% group_by(ParticipantID) %>% summarize(days = n()) %>% ungroup() %>% grou
 #write.csv(all, file = "/Users/gregorymatthews/Dropbox/PUSH-Sleep_git/data/PUSH_Sleep_merged.csv", row.names = FALSE)
 ```
 
+# Exploratory Data Analysis
+
+We began by observing the distribution of the independent variables of interest (dependent variable distributions are observed with their models below).
+
+```{r}
+vars <- all %>% select(ParticipantID, StudyDay, C_ACTI_Date,
+                         # dependent vars
+                         C_ACTI_Duration, 
+                         C_ACTI_WT_DEC, 
+                         C_ACTI_SOL, 
+                         C_ACTI_SleepOnsetTime_TRM, 
+                         C_ACTI_Efficiency, 
+                         C_ACTI_Waso, 
+                         C_ACTI_SleepTime_sd, 
+                         C_ACTI_WakeTime_sd, 
+                         C_ACTI_SleepTime_sd, 
+                         # covariates
+                         c_demo_8_v2, 
+                         c_demo_6_v2, 
+                         C_DD_PM_DayType,
+                         #fixed effects
+                         geo_COI_ED_3.0,
+                         geo_COI_HE_3.0,
+                         geo_COI_SE_3.0,
+                         P_COHESION,
+                         C_MESA_FT,
+                         C_MESA_ES,
+                         C_CHAOS,
+                         c_se_12_v2,
+                         c_se_8_v2,
+                         c_se_11_v2) %>% 
+  mutate(c_demo_8_v2 = as.factor(c_demo_8_v2),
+         C_DD_PM_DayType = as.factor(C_DD_PM_DayType),
+         c_se_12_v2 = as.factor(c_se_12_v2),
+         c_se_8_v2 = as.factor(c_se_8_v2),
+         c_se_11_v2 = as.factor(c_se_11_v2))
+```
+
+### Covariates
+
+Because the datasets are merged, each row represents a recorded study day. The covariates, which are the same for an individual throughout the study, are not a count of the individuals, but rather a count of the number of study days.
+
+Looking at the covariates, there are more study days recorded for females (139) than for males (65).
+
+For grade in school, there are 49 recorded days for 8th graders, 55 for 9th graders, 50 for 10th graders, 21 for 11th graders, and 7 for 12th graders (likely one individual). There are also 8 observations with "7" as the level for this variable, which is not a valid level in the data dictionary. This individual is 13 years old, which is likely an 8th grader. The levels were renamed to match the grade (1 turns into 8 to indicate 8th grade, 2 into 9, etc.).
+
+More study days were recorded in the summer (86) than during the academic school year (76).
+
+We also created a variable to indicate whether the day was a Friday or Saturday night (called weekend).
+
+```{r}
+# c_demo_8_v2 -- Biological Sex
+# MALE (1), FEMALE (2), DON’T KNOW (3), PREFER NOT TO ANSWER (4)
+table(vars$c_demo_8_v2, useNA = "always")
+
+# c_demo_6_v2 -- Grade in School
+# 8th (1), 9th (2), 10th (3), 11th (4), 12th (5)
+table(vars$c_demo_6_v2, useNA = "always")
+all %>% filter(c_demo_6_v2 == 7) %>% select(c_demo_6_v2, c_demo_2_v2)
+
+model <- vars %>% mutate(c_demo_6_v2 = case_when(
+  c_demo_6_v2 == 1 ~ 8,
+  c_demo_6_v2 == 2 ~ 9,
+  c_demo_6_v2 == 3 ~ 10,
+  c_demo_6_v2 == 4 ~ 11,
+  c_demo_6_v2 == 5 ~ 12,
+  c_demo_6_v2 == 7 ~ 7))
+table(model$c_demo_6_v2, useNA = "always")
+
+# C_DD_PM_DayType -- School or Summer
+# Summer (0), Academic School Year (1)
+table(model$C_DD_PM_DayType)
+
+# add weekend variable
+  # weekend = Friday or Saturday night
+models <- model %>% mutate(weekday = wday(models$C_ACTI_Date, label = TRUE),
+                           weekend = 
+                             case_when(weekday == 'Fri' | weekday == 'Sat' ~ 1,
+                                       .default = 0))
+```
+
+### Sleep Environment Variables
+
+```{r}
+# c_se_12_v2 -- sleep disruptions
+# YES (1), NO (2)
+table(models$c_se_12_v2, useNA = "always")
+
+# c_se_8_v2 -- sleep quiet
+# YES (1), NO (2)
+table(models$c_se_8_v2, useNA = "always")
+
+# # c_se_11_v2 -- sleep dark
+# YES (1), NO (2)
+table(models$c_se_11_v2, useNA = "always")
+```
+
+
 # Correlation Matrix
 
-Then a correlation matrix was created for the variables of interest (dependent variables, covariates, and fixed effects). On the correlation matrix, darker colors (blue for positive; red for negative correlation) and bigger squares mean a stronger correlation. The area of the correlation matrix of most interest is the upper right most rectangle indicating correlations between the sleep variables (labeled "dependent variables") and the environment variables (labeled "fixed effects").
+A correlation matrix was created for the variables of interest (dependent variables, covariates, and fixed effects). On the correlation matrix, darker colors (blue for positive; red for negative correlation) and bigger squares mean a stronger correlation. The area of the correlation matrix of most interest is the upper right most rectangle indicating correlations between the sleep variables (labeled "dependent variables") and the environment variables (labeled "fixed effects").
 
 ## Variables of interest
 
@@ -176,49 +276,18 @@ Wake time standard deviation has a moderate positive correlation with MESA Econo
 Awakenings quality (WASO), sleep duration standard deviation, and sleep onset time standard deviation do not have any significant correlations with environmental variables.
 
 
+
 \newpage
 
 # Models
 
-```{r}
-models <- all %>% select(ParticipantID, StudyDay,
-                         # dependent vars
-                         C_ACTI_Duration, 
-                         C_ACTI_WT_DEC, 
-                         C_ACTI_SOL, 
-                         C_ACTI_SleepOnsetTime_TRM, 
-                         C_ACTI_Efficiency, 
-                         C_ACTI_Waso, 
-                         C_ACTI_SleepTime_sd, 
-                         C_ACTI_WakeTime_sd, 
-                         C_ACTI_SleepTime_sd, 
-                         # covariates
-                         c_demo_8_v2, 
-                         c_demo_6_v2, 
-                         C_DD_PM_DayType,
-                         #fixed effects
-                         geo_COI_ED_3.0,
-                         geo_COI_HE_3.0,
-                         geo_COI_SE_3.0,
-                         P_COHESION,
-                         C_MESA_FT,
-                         C_MESA_ES,
-                         C_CHAOS,
-                         c_se_12_v2,
-                         c_se_8_v2,
-                         c_se_11_v2) %>% 
-  mutate(c_demo_8_v2 = as.factor(c_demo_8_v2),
-         c_demo_6_v2 = as.factor(c_demo_6_v2),
-         C_DD_PM_DayType = as.factor(C_DD_PM_DayType),
-         c_se_12_v2 = as.factor(c_se_12_v2),
-         c_se_8_v2 = as.factor(c_se_8_v2),
-         c_se_11_v2 = as.factor(c_se_11_v2))
-```
+We are interested in 9 dependent variables: sleep duration, offset/waketime, onset/falling asleep time, efficiency, awakenings, duration variability, offset variation, and onset variation. There are 3 models for each dependent variable. The first model includes neighborhood factors (COI domains). The second model includes family factors (family cohesion, MESA variables, and CHAOS). The third model includes sleep environment characteristics (number of sleep disruptions and if the environment was quiet). Originally, the third model was to also include if the environment was dark, but only one individual had a light environment, so this variable is not usable.
 
+Each model also includes covariates: sex, grade, and whether the study day was during the school year or summer. We also derived a new variable for whether the study day was a weekend (Friday or Saturday night). The levels in the grade in school variable were renamed to reflect the number of the grade. An individual also had grade level 7, which was not defined on the scale. Because the individual was 13, we put them into grade level 1, which is 8th grade.
 
 BASIC MODEL: includes c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType
 
-## Daily
+## Daily Variables
 
 ### Duration (C_ACTI_Duration)
 
@@ -226,11 +295,10 @@ BASIC MODEL: includes c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType
 hist(all$C_ACTI_Duration)
 summary(all$C_ACTI_Duration)
 
-
 ################################
 #Model 1: Neighborhood Factors
 ################################
-mod1_duration <- lmer(C_ACTI_Duration ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models %>% filter(c_demo_6_v2 %in% c(1,2,3,4,5)))
+mod1_duration <- lmer(C_ACTI_Duration ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models %>% filter(c_demo_6_v2 %in% c(8,9,10,11,12)))
 summary(mod1_duration)
 ci <- confint(mod1_duration)
 print(ci)
@@ -247,7 +315,7 @@ lattice::qqmath(mod1_duration)
 ################################
 #Model 2: Family Factors
 ################################
-mod2_duration <- lmer(C_ACTI_Duration ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + (1|ParticipantID), data = models)
+mod2_duration <- lmer(C_ACTI_Duration ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + (1|ParticipantID), data = models %>% filter(c_demo_6_v2 %in% c(8,9,10,11,12))
 summary(mod2_duration)
 ci <- confint(mod2_duration)
 print(ci)
@@ -264,7 +332,7 @@ lattice::qqmath(mod2_duration)
 ################################
 #Model 3: Sleep Environment Characteristics
 ################################
-mod3_duration <- lmer(C_ACTI_Duration ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2 + c_se_11_v2 + (1|ParticipantID), data = models)
+mod3_duration <- lmer(C_ACTI_Duration ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + c_se_12_v2 + c_se_8_v2 + c_se_11_v2 + (1|ParticipantID), data = models %>% filter(c_demo_6_v2 %in% c(8,9,10,11,12))
 summary(mod3_duration)
 ci <- confint(mod3_duration)
 print(ci)
@@ -575,7 +643,7 @@ lattice::qqmath(mod3_waso)
 
 \newpage
 
-## Weekly
+## Weekly Variables
 
 ```{r}
 weekly <- models %>% filter(StudyDay == 1)

@@ -41,6 +41,7 @@ all %>% group_by(ParticipantID) %>% summarize(days = n()) %>% ungroup() %>% grou
 #write.csv(all, file = "/Users/gregorymatthews/Dropbox/PUSH-Sleep_git/data/PUSH_Sleep_merged.csv", row.names = FALSE)
 ```
 
+
 # Correlation Matrix
 
 Then a correlation matrix was created for the variables of interest (dependent variables, covariates, and fixed effects). On the correlation matrix, darker colors (blue for positive; red for negative correlation) and bigger squares mean a stronger correlation. The area of the correlation matrix of most interest is the upper right most rectangle indicating correlations between the sleep variables (labeled "dependent variables") and the environment variables (labeled "fixed effects").
