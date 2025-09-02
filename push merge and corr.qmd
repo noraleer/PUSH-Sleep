@@ -21,8 +21,8 @@ library(tidyverse)
 
 # push_wide <- read_csv("./data/PUSH_actigraph_geo_wide_8.7.25.csv")
 # push_long <- read_csv("./data/PUSH_long_geo.csv")
-push_wide <- read_csv("PUSH_actigraph_geo_wide_8.7.25.csv")
-push_long <- read_csv("PUSH_long_geo.csv")
+ push_wide <- read_csv("PUSH_actigraph_geo_wide_8.7.25.csv")
+ push_long <- read_csv("PUSH_long_geo.csv")
 ```
 
 # Merging long and wide data sets
