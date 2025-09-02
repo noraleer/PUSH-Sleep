@@ -54,7 +54,7 @@ We began by observing the distribution of the independent variables of interest 
 ```{r}
 vars <- all %>% select(ParticipantID, StudyDay, C_ACTI_Date,
                          # dependent vars
-                         C_ACTI_Duration, 
+                         C_ACTI_SleepTime, 
                          C_ACTI_WT_DEC, 
                          C_ACTI_SOL, 
                          C_ACTI_SleepOnsetTime_TRM, 
@@ -290,7 +290,7 @@ Each model also includes covariates: sex, grade, whether the study day was durin
 
 The models that had residual/homoskedascity plots that did not meet assumptions were transformed using a log transformation. The untransformed and transformed models were compared using AIC, and the model with the lower AIC is the final model. After the models were made, we identified significant variables. Below is a summary list of all the models with their significant variables (if any) and whether a transformation was used.
 
-1.  Duration (C_ACTI_Duration)
+1.  Duration (C_ACTI_SleepTime)
 
 -   no tranformation
 
@@ -391,16 +391,16 @@ BASIC MODEL: includes c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend
 
 ## Daily Variables
 
-### Duration (C_ACTI_Duration)
+### Duration (C_ACTI_SleepTime)
 
 ```{r}
-hist(all$C_ACTI_Duration)
-summary(all$C_ACTI_Duration)
+hist(all$C_ACTI_SleepTime)
+summary(all$C_ACTI_SleepTime)
 
 ################################
 #Model 1: Neighborhood Factors
 ################################
-mod1_duration <- lmer(C_ACTI_Duration ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models)
+mod1_duration <- lmer(C_ACTI_SleepTime ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models)
 summary(mod1_duration)
 ci <- confint(mod1_duration)
 print(ci)
@@ -417,7 +417,7 @@ lattice::qqmath(mod1_duration)
 ################################
 #Model 2: Family Factors
 ################################
-mod2_duration <- lmer(C_ACTI_Duration ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + (1|ParticipantID), data = models)
+mod2_duration <- lmer(C_ACTI_SleepTime ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + (1|ParticipantID), data = models)
 summary(mod2_duration)
 ci <- confint(mod2_duration)
 print(ci)
@@ -434,7 +434,7 @@ lattice::qqmath(mod2_duration)
 ################################
 #Model 3: Sleep Environment Characteristics
 ################################
-mod3_duration <- lmer(C_ACTI_Duration ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + c_se_12_v2 + c_se_8_v2 + (1|ParticipantID), data = models)
+mod3_duration <- lmer(C_ACTI_SleepTime ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + c_se_12_v2 + c_se_8_v2 + (1|ParticipantID), data = models)
 summary(mod3_duration)
 ci <- confint(mod3_duration)
 print(ci)
