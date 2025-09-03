@@ -61,7 +61,8 @@ vars <- all %>% select(ParticipantID, StudyDay, C_ACTI_Date,
                          C_ACTI_Efficiency, 
                          C_ACTI_Waso, 
                          C_ACTI_SleepTime_sd, 
-                         C_ACTI_WT_DEC_sd, 
+                         C_ACTI_WT_DEC_sd,
+                         C_ACTI_WakeTime_sd,
                          C_ACTI_SleepOnsetTime_TRM_sd, 
                          # covariates
                          c_demo_8_v2, 
@@ -293,7 +294,7 @@ The models that had residual/homoskedascity plots that did not meet assumptions 
 
 1.  Duration (C_ACTI_SleepTime)
 
--   no tranformation
+-   no transformation
 
 i.  None (only COI total in model 1)
 ii. None
@@ -349,8 +350,10 @@ ii. MESA_ES has positive coefficient (23.173, CI: 1.599, 44.747)
 
 -   no log transformation (but could do it)
 
-i.  None
-ii. C_MESA_ES has positive coefficient (11.39, CI: 6.074, 16.706). CHAOS has a negative coefficient (-11.972, CI: -20.200, -3.745).
+i.  geo_COI_3.0 has negative coefficient (-0.52009, CI: -0.9615, -0.07869)
+ii. None?
+
+C_MESA_ES has positive coefficient (11.39, CI: 6.074, 16.706). CHAOS has a negative coefficient (-11.972, CI: -20.200, -3.745).
 
 <!-- -->
 
@@ -776,6 +779,22 @@ performance_aic(mod2_off_var)
 performance_aic(mod2_off_var_log)
 
 # pretty close
+
+
+
+
+
+
+
+
+
+mod2_off_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
+summary(mod2_off_var)
+ci <- confint(mod2_off_var)
+print(ci)
+
+plot(mod2_off_var, 1)
+plot(mod2_off_var, 2)
 ```
 
 \newpage
