@@ -68,6 +68,7 @@ vars <- all %>% select(ParticipantID, StudyDay, C_ACTI_Date,
                          c_demo_6_v2, 
                          C_DD_PM_DayType,
                          #fixed effects
+                         geo_COI_3.0,
                          geo_COI_ED_3.0,
                          geo_COI_HE_3.0,
                          geo_COI_SE_3.0,
@@ -282,7 +283,7 @@ Awakenings quality (WASO), sleep duration standard deviation, and sleep onset ti
 
 # Models
 
-We are interested in 9 dependent variables: sleep duration, offset/waketime, onset/falling asleep time, efficiency, awakenings, duration variability, offset variation, and onset variation. There are 3 models for each dependent variable. The first model includes neighborhood factors (COI domains), the second model includes family factors (family cohesion, MESA variables, and CHAOS), and the third model includes sleep environment characteristics (number of sleep disruptions and if the environment was quiet). Originally, the third model was to also include if the environment was dark, but only one individual had a light environment, so this variable is not usable in the model.
+We are interested in 8 dependent variables: sleep duration, offset/waketime, onset/falling asleep time, efficiency, duration variability, offset variation, and onset variation. There are 3 models for each dependent variable. The first model includes neighborhood factors (COI domains), the second model includes family factors (family cohesion, MESA variables, and CHAOS), and the third model includes sleep environment characteristics (number of sleep disruptions and if the environment was quiet). Originally, the third model was to also include if the environment was dark, but only one individual had a light environment, so this variable is not usable in the model.
 
 Each model also includes covariates: sex, grade, whether the study day was during the school year or summer, and whether the study day was a weekend (Friday or Saturday night). The levels in the grade in school variable were renamed to reflect the number of the grade. An individual also had grade level 7, which was not defined on the scale. Because the individual was 13, we put them into grade level 1, which is 8th grade.
 
@@ -294,39 +295,35 @@ The models that had residual/homoskedascity plots that did not meet assumptions 
 
 -   no tranformation
 
-i.  COI_HE has significant negative coefficient and COI_SE has significant positive coefficient.
+i.  None (only COI total in model 1)
 ii. None
-iii. None
 
 <!-- -->
 
 2.  Offset/Waketime (C_ACTI_WT_DEC)
 
--   log models have higher AIC, so untransformed models are final models.
+-   no transformation
+
+i.  None
+ii. P_COHESION has a negative coefficient (-0.7401, CI: -1.458, -0.042)
+
+<!-- -->
+
+3.  Onset/Falling Asleep (Time from laying down to falling sleep) (C_ACTI_SOL)
+
+-   log transformation for both models
 
 i.  None
 ii. None
-iii. None
 
 <!-- -->
 
-3.  Onset/Falling Asleep 1 (C_ACTI_SOL)
-
--   log transformation for every model
-
-i.  None
-ii. P_COHESION has positive coefficient.
-iii. Sleep Quiet has positive coefficient.
-
-<!-- -->
-
-4.  Onset/Falling Asleep 2 (C_ACTI_SleepOnsetTime_TRM)
+4.  Onset/Falling Asleep (Fell Asleep Time) (C_ACTI_SleepOnsetTime_TRM)
 
 -   no log transformation
 
 i.  None
 ii. None
-iii. None
 
 <!-- -->
 
@@ -334,54 +331,43 @@ iii. None
 
 -   no log transformation
 
-i.  geo_COI_HE_3.0 has negative coefficient.
-ii. C_MESA_FT has positive coefficient.
-iii. None
-
-<!-- -->
-
-6.  Awakenings (C_ACTI_Waso)
-
--   log transformation for each model
-
 i.  None
-ii. None
-iii. None
+ii. C_MESA_FT has positive coefficient (1.0892, CI: 0.3695, 1.8128). C_MESA_ES has a negative coefficient (-2.555, CI: -4.937, -0.1739)
 
 <!-- -->
 
-7.  Duration Variability (C_ACTI_SleepTime_sd)
+6.  Duration Variability (C_ACTI_SleepTime_sd)
 
 -   no log transformation
 
 i.  None
-ii. All! P_COHESION, MESA_FT, and CHAOS has negative coefficients; MESA_ES has positive coefficient.
-iii. None
+ii. MESA_ES has positive coefficient (23.173, CI: 1.599, 44.747)
 
 <!-- -->
 
-8.  Offset Variability (C_ACTI_WakeTime_sd)
+7.  Offset Variability (C_ACTI_WakeTime_sd)
 
--   log transformations for each model
+-   no log transformation (but could do it)
 
 i.  None
-ii. C_MESA_ES has positive coefficient
-iii. None
+ii. C_MESA_ES has positive coefficient (11.39, CI: 6.074, 16.706). CHAOS has a negative coefficient (-11.972, CI: -20.200, -3.745).
 
 <!-- -->
 
-9.  Onset Variability (C_ACTI_SleepOnsetTime_TRM)
+8.  Onset Variability (C_ACTI_SleepOnsetTime_TRM)
 
--   log transformation for each model
+-   no log transformation (but could do it)
 
 i.  None
-ii. MESA_ES has positive coefficient; CHAOS has negative coefficient.
-iii. None
+ii. MESA_ES has positive coefficient (1.4751, CI: 0.7138, 2.2364). CHAOS has a negative coefficient (-1.6486, CI: -2.8269, -0.4703).
 
-#### Interesting Things
+### Changes 9/2
 
-1.  Both daily onset variables had significant relationships with P_COHESION (model 2) and Sleep Quiet (model 3). This makes sense because the variables are two measurements of the same dependent variable.
-2.  All of the fixed effects are significant in duration variability model 2.
+- take out model 3
+- take out awakenings model
+- take out daytype (school/summer) covariate in each model
+- do coi total in model 1
+- write up what actually exists
 
 \newpage
 
@@ -400,7 +386,7 @@ summary(all$C_ACTI_SleepTime)
 ################################
 #Model 1: Neighborhood Factors
 ################################
-mod1_duration <- lmer(C_ACTI_SleepTime ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models)
+mod1_duration <- lmer(C_ACTI_SleepTime ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_3.0 + (1|ParticipantID), data = models)
 summary(mod1_duration)
 ci <- confint(mod1_duration)
 print(ci)
@@ -429,23 +415,6 @@ plot(mod2_duration,
      type=c("p","smooth"), col.line=1)
 
 lattice::qqmath(mod2_duration)
-
-
-################################
-#Model 3: Sleep Environment Characteristics
-################################
-mod3_duration <- lmer(C_ACTI_SleepTime ~ c_demo_8_v2 + c_demo_6_v2 + weekend + c_se_12_v2 + c_se_8_v2 + (1|ParticipantID), data = models)
-summary(mod3_duration)
-ci <- confint(mod3_duration)
-print(ci)
-
-plot(mod3_duration, type=c("p","smooth"), col.line=1)
-
-plot(mod3_duration,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3_duration)
 ```
 
 \newpage
@@ -459,7 +428,7 @@ summary(all$C_ACTI_WT_DEC)
 ################################
 #Model 1: Neighborhood Factors
 ################################
-mod1_offset <- lmer(C_ACTI_WT_DEC ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models)
+mod1_offset <- lmer(C_ACTI_WT_DEC ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_3.0 + (1|ParticipantID), data = models)
 summary(mod1_offset)
 ci <- confint(mod1_offset)
 print(ci)
@@ -471,26 +440,6 @@ plot(mod1_offset,
      type=c("p","smooth"), col.line=1)
 
 lattice::qqmath(mod1_offset)
-
-# log
-mod1_offset_log <- lmer(log(C_ACTI_WT_DEC) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models)
-summary(mod1_offset_log)
-ci <- confint(mod1_offset_log)
-print(ci)
-
-plot(mod1_offset_log, type=c("p","smooth"), col.line=1)
-
-plot(mod1_offset_log,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod1_offset_log)
-
-# compare
-performance_aic(mod1_offset)
-performance_aic(mod1_offset_log)
-
-### Model without log transformation is better
 
 
 ################################
@@ -508,43 +457,6 @@ plot(mod2_offset,
      type=c("p","smooth"), col.line=1)
 
 lattice::qqmath(mod2_offset)
-
-
-################################
-#Model 3: Sleep Environment Characteristics
-################################
-mod3_offset <- lmer(C_ACTI_WT_DEC ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + c_se_12_v2 + c_se_8_v2 + (1|ParticipantID), data = models)
-summary(mod3_offset)
-ci <- confint(mod3_offset)
-print(ci)
-
-plot(mod3_offset, type=c("p","smooth"), col.line=1)
-
-plot(mod3_offset,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3_offset)
-
-# log
-mod3_offset_log <- lmer(log(C_ACTI_WT_DEC) ~ c_demo_8_v2 + c_demo_6_v2 + weekend + c_se_12_v2 + c_se_8_v2 + (1|ParticipantID), data = models)
-summary(mod3_offset_log)
-ci <- confint(mod3_offset_log)
-print(ci)
-
-plot(mod3_offset_log, type=c("p","smooth"), col.line=1)
-
-plot(mod3_offset_log,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3_offset_log)
-
-# compare
-performance_aic(mod3_offset)
-performance_aic(mod3_offset_log)
-
-### Model without log transformation is better
 ```
 
 \newpage
@@ -558,7 +470,7 @@ summary(all$C_ACTI_SOL)
 ################################
 #Model 1: Neighborhood Factors
 ################################
-mod1_onset1 <- lmer(C_ACTI_SOL ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models)
+mod1_onset1 <- lmer(C_ACTI_SOL ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_3.0 + (1|ParticipantID), data = models)
 summary(mod1_onset1)
 ci <- confint(mod1_onset1)
 print(ci)
@@ -573,7 +485,7 @@ lattice::qqmath(mod1_onset1)
 
 
 # log
-mod1_onset1_log <- lmer(log(C_ACTI_SOL + 1) ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models)
+mod1_onset1_log <- lmer(log(C_ACTI_SOL + 1) ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_3.0 + (1|ParticipantID), data = models)
 summary(mod1_onset1_log)
 ci <- confint(mod1_onset1_log)
 print(ci)
@@ -631,9 +543,7 @@ lattice::qqmath(mod2_onset1_log)
 performance_aic(mod2_onset1)
 performance_aic(mod2_onset1_log)
 
-
 # Log model is better
-
 ```
 
 \newpage
@@ -641,15 +551,13 @@ performance_aic(mod2_onset1_log)
 ### Onset/Falling Asleep 2 (C_ACTI_SleepOnsetTime_TRM)
 
 ```{r}
-models$C_ACTI_SleepOnsetTime_TR6 <- models$C_ACTI_SleepOnsetTime_TRM + 6
-
 hist(all$C_ACTI_SleepOnsetTime_TRM)
 summary(all$C_ACTI_SleepOnsetTime_TRM)
 
 ################################
 #Model 1: Neighborhood Factors
 ################################
-mod1_onset2 <- lmer(C_ACTI_SleepOnsetTime_TRM ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models)
+mod1_onset2 <- lmer(C_ACTI_SleepOnsetTime_TRM ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_3.0 + (1|ParticipantID), data = models)
 summary(mod1_onset2)
 ci <- confint(mod1_onset2)
 print(ci)
@@ -678,24 +586,6 @@ plot(mod2_onset2,
      type=c("p","smooth"), col.line=1)
 
 lattice::qqmath(mod2_onset2)
-
-
-################################
-#Model 3: Sleep Environment Characteristics
-################################
-mod3_onset2 <- lmer(C_ACTI_SleepOnsetTime_TRM ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + c_se_12_v2 + c_se_8_v2 + (1|ParticipantID), data = models)
-summary(mod3_onset2)
-ci <- confint(mod3_onset2)
-print(ci)
-
-plot(mod3_onset2, type=c("p","smooth"), col.line=1)
-
-plot(mod3_onset2,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3_onset2)
-
 ```
 
 \newpage
@@ -709,7 +599,7 @@ summary(all$C_ACTI_Efficiency)
 ################################
 #Model 1: Neighborhood Factors
 ################################
-mod1_efficiency <- lmer(C_ACTI_Efficiency ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models)
+mod1_efficiency <- lmer(C_ACTI_Efficiency ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_3.0 + (1|ParticipantID), data = models)
 summary(mod1_efficiency)
 ci <- confint(mod1_efficiency)
 print(ci)
@@ -723,7 +613,7 @@ plot(mod1_efficiency,
 lattice::qqmath(mod1_efficiency)
 
 # log
-mod1_efficiency_log <- lmer(log(C_ACTI_Efficiency) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models)
+mod1_efficiency_log <- lmer(log(C_ACTI_Efficiency) ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_3.0 + (1|ParticipantID), data = models)
 summary(mod1_efficiency_log)
 ci <- confint(mod1_efficiency_log)
 print(ci)
@@ -758,143 +648,6 @@ plot(mod2_efficiency,
      type=c("p","smooth"), col.line=1)
 
 lattice::qqmath(mod2_efficiency)
-
-
-################################
-#Model 3: Sleep Environment Characteristics
-################################
-mod3_efficiency <- lmer(C_ACTI_Efficiency ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + c_se_12_v2 + c_se_8_v2 + (1|ParticipantID), data = models)
-summary(mod3_efficiency)
-ci <- confint(mod3_efficiency)
-print(ci)
-
-plot(mod3_efficiency, type=c("p","smooth"), col.line=1)
-
-plot(mod3_efficiency,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3_efficiency)
-```
-
-\newpage
-
-### Awakenings (C_ACTI_Waso)
-
-```{r}
-hist(all$C_ACTI_Waso)
-summary(all$C_ACTI_Waso)
-
-################################
-#Model 1: Neighborhood Factors
-################################
-mod1_waso <- lmer(C_ACTI_Waso ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models)
-summary(mod1_waso)
-ci <- confint(mod1_waso)
-print(ci)
-
-plot(mod1_waso, type=c("p","smooth"), col.line=1)
-
-plot(mod1_waso,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod1_waso)
-
-# log
-mod1_waso_log <- lmer(log(C_ACTI_Waso + 1) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + (1|ParticipantID), data = models)
-summary(mod1_waso_log)
-ci <- confint(mod1_waso_log)
-print(ci)
-
-plot(mod1_waso_log, type=c("p","smooth"), col.line=1)
-
-plot(mod1_waso_log,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod1_waso_log)
-
-# compare
-performance_aic(mod1_waso)
-performance_aic(mod1_waso_log)
-
-# log model is better
-
-
-################################
-#Model 2: Family Factors
-################################
-mod2_waso <- lmer(C_ACTI_Waso ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + (1|ParticipantID), data = models)
-summary(mod2_waso)
-ci <- confint(mod2_waso)
-print(ci)
-
-plot(mod2_waso, type=c("p","smooth"), col.line=1)
-
-plot(mod2_waso,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod2_waso)
-
-
-# log 
-mod2_waso_log <- lmer(log(C_ACTI_Waso + 1) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + (1|ParticipantID), data = models)
-summary(mod2_waso_log)
-ci <- confint(mod2_waso_log)
-print(ci)
-
-plot(mod2_waso_log, type=c("p","smooth"), col.line=1)
-
-plot(mod2_waso_log,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod2_waso_log)
-
-# compare
-performance_aic(mod2_waso)
-performance_aic(mod2_waso_log)
-
-# log model is better
-
-
-################################
-#Model 3: Sleep Environment Characteristics
-################################
-mod3_waso <- lmer(C_ACTI_Waso ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + c_se_12_v2 + c_se_8_v2 + (1|ParticipantID), data = models)
-summary(mod3_waso)
-ci <- confint(mod3_waso)
-print(ci)
-
-plot(mod3_waso, type=c("p","smooth"), col.line=1)
-
-plot(mod3_waso,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3_waso)
-
-# log
-mod3_waso_log <- lmer(log(C_ACTI_Waso + 1) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + c_se_12_v2 + c_se_8_v2 + (1|ParticipantID), data = models)
-summary(mod3_waso_log)
-ci <- confint(mod3_waso_log)
-print(ci)
-
-plot(mod3_waso_log, type=c("p","smooth"), col.line=1)
-
-plot(mod3_waso_log,
-     sqrt(abs(resid(.)))~fitted(.),
-     type=c("p","smooth"), col.line=1)
-
-lattice::qqmath(mod3_waso_log)
-
-# compare
-performance_aic(mod3_waso)
-performance_aic(mod3_waso_log)
-
-# log model is better
 ```
 
 \newpage
@@ -914,7 +667,7 @@ summary(all$C_ACTI_SleepTime_sd)
 ################################
 #Model 1: Neighborhood Factors
 ################################
-mod1_dur_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0, data = weekly)
+mod1_dur_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_3.0, data = weekly)
 summary(mod1_dur_var)
 ci <- confint(mod1_dur_var)
 print(ci)
@@ -923,7 +676,7 @@ plot(mod1_dur_var, 1)
 plot(mod1_dur_var, 2)
 
 # log
-mod1_dur_var_log <- lm(log(C_ACTI_SleepTime_sd) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0, data = weekly)
+mod1_dur_var_log <- lm(log(C_ACTI_SleepTime_sd) ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_3.0, data = weekly)
 summary(mod1_dur_var_log)
 ci <- confint(mod1_dur_var_log)
 print(ci)
@@ -935,12 +688,11 @@ plot(mod1_dur_var_log, 2)
 performance_aic(mod1_dur_var)
 performance_aic(mod1_dur_var_log)
 
-# non transformed model is slightly better
 
 ################################
 #Model 2: Family Factors
 ################################
-mod2_dur_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
+mod2_dur_var <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
 summary(mod2_dur_var)
 ci <- confint(mod2_dur_var)
 print(ci)
@@ -949,7 +701,7 @@ plot(mod2_dur_var, 1)
 plot(mod2_dur_var, 2)
 
 # log
-mod2_dur_var_log <- lm(log(C_ACTI_SleepTime_sd) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
+mod2_dur_var_log <- lm(log(C_ACTI_SleepTime_sd) ~ c_demo_8_v2 + c_demo_6_v2 + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
 summary(mod2_dur_var_log)
 ci <- confint(mod2_dur_var_log)
 print(ci)
@@ -963,7 +715,6 @@ performance_aic(mod2_dur_var_log)
 
 # aic is close enough, could choose either model
 # choose non transformed for simplicity
-
 ```
 
 \newpage
@@ -977,7 +728,7 @@ summary(all$C_ACTI_WakeTime_sd)
 ################################
 #Model 1: Neighborhood Factors
 ################################
-mod1_off_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0, data = weekly)
+mod1_off_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_3.0, data = weekly)
 summary(mod1_off_var)
 ci <- confint(mod1_off_var)
 print(ci)
@@ -986,7 +737,7 @@ plot(mod1_off_var, 1)
 plot(mod1_off_var, 2)
 
 # log
-mod1_off_var_log <- lm(log(C_ACTI_WakeTime_sd) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0, data = weekly)
+mod1_off_var_log <- lm(log(C_ACTI_WakeTime_sd) ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_3.0, data = weekly)
 summary(mod1_off_var_log)
 ci <- confint(mod1_off_var_log)
 print(ci)
@@ -998,11 +749,12 @@ plot(mod1_off_var_log, 2)
 performance_aic(mod1_off_var)
 performance_aic(mod1_off_var_log)
 
+# log slightly better but close
 
 ################################
 #Model 2: Family Factors
 ################################
-mod2_off_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
+mod2_off_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
 summary(mod2_off_var)
 ci <- confint(mod2_off_var)
 print(ci)
@@ -1011,7 +763,7 @@ plot(mod2_off_var, 1)
 plot(mod2_off_var, 2)
 
 # log
-mod2_off_var_log <- lm(log(C_ACTI_WakeTime_sd) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
+mod2_off_var_log <- lm(log(C_ACTI_WakeTime_sd) ~ c_demo_8_v2 + c_demo_6_v2 + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
 summary(mod2_off_var_log)
 ci <- confint(mod2_off_var_log)
 print(ci)
@@ -1023,30 +775,7 @@ plot(mod2_off_var_log, 2)
 performance_aic(mod2_off_var)
 performance_aic(mod2_off_var_log)
 
-################################
-#Model 3: Sleep Environment Characteristics
-################################
-mod3_off_var <- lm(C_ACTI_WakeTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + c_se_12_v2 + c_se_8_v2, data = weekly)
-summary(mod3_off_var)
-ci <- confint(mod3_off_var)
-print(ci)
-
-plot(mod3_off_var, 1)
-plot(mod3_off_var, 2)
-
-
-# log
-mod3_off_var_log <- lm(log(C_ACTI_WakeTime_sd) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + c_se_12_v2 + c_se_8_v2, data = weekly)
-summary(mod3_off_var_log)
-ci <- confint(mod3_off_var_log)
-print(ci)
-
-plot(mod3_off_var_log, 1)
-plot(mod3_off_var_log, 2)
-
-# compare
-performance_aic(mod3_off_var)
-performance_aic(mod3_off_var_log)
+# pretty close
 ```
 
 \newpage
@@ -1060,7 +789,7 @@ summary(all$C_ACTI_SleepOnsetTime_TRM)
 ################################
 #Model 1: Neighborhood Factors
 ################################
-mod1_on_var <- lm(C_ACTI_SleepOnsetTime_TRM ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0, data = weekly)
+mod1_on_var <- lm(C_ACTI_SleepOnsetTime_TRM ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_3.0, data = weekly)
 summary(mod1_on_var)
 ci <- confint(mod1_on_var)
 print(ci)
@@ -1069,7 +798,7 @@ plot(mod1_on_var, 1)
 plot(mod1_on_var, 2)
 
 # log
-mod1_on_var_log <- lm(log(C_ACTI_SleepOnsetTime_TRM + 3) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0, data = weekly)
+mod1_on_var_log <- lm(log(C_ACTI_SleepOnsetTime_TRM + 3) ~ c_demo_8_v2 + c_demo_6_v2 + weekend + geo_COI_3.0, data = weekly)
 summary(mod1_on_var_log)
 ci <- confint(mod1_on_var_log)
 print(ci)
@@ -1087,7 +816,7 @@ performance_aic(mod1_on_var_log)
 ################################
 #Model 2: Family Factors
 ################################
-mod2_on_var <- lm(C_ACTI_SleepOnsetTime_TRM ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
+mod2_on_var <- lm(C_ACTI_SleepOnsetTime_TRM ~ c_demo_8_v2 + c_demo_6_v2 + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
 summary(mod2_on_var)
 ci <- confint(mod2_on_var)
 print(ci)
@@ -1096,7 +825,7 @@ plot(mod2_on_var, 1)
 plot(mod2_on_var, 2)
 
 # log 
-mod2_on_var_log <- lm(log(C_ACTI_SleepOnsetTime_TRM + 3) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
+mod2_on_var_log <- lm(log(C_ACTI_SleepOnsetTime_TRM + 3) ~ c_demo_8_v2 + c_demo_6_v2 + weekend + P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
 summary(mod2_on_var_log)
 ci <- confint(mod2_on_var_log)
 print(ci)
@@ -1109,33 +838,4 @@ performance_aic(mod2_on_var)
 performance_aic(mod2_on_var_log)
 
 # log model is better
-
-
-################################
-#Model 3: Sleep Environment Characteristics
-################################
-mod3_on_var <- lm(C_ACTI_SleepOnsetTime_TRM ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + c_se_12_v2 + c_se_8_v2, data = weekly)
-summary(mod3_on_var)
-ci <- confint(mod3_on_var)
-print(ci)
-
-plot(mod3_on_var, 1)
-plot(mod3_on_var, 2)
-
-# log
-mod3_on_var_log <- lm(log(C_ACTI_SleepOnsetTime_TRM + 3) ~ c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend + c_se_12_v2 + c_se_8_v2, data = weekly)
-summary(mod3_on_var_log)
-ci <- confint(mod3_on_var_log)
-print(ci)
-
-plot(mod3_on_var_log, 1)
-plot(mod3_on_var_log, 2)
-
-# compare
-performance_aic(mod3_on_var)
-performance_aic(mod3_on_var_log)
 ```
-
-
-for COIs, either do PCA or penalized regression?
-
