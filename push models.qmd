@@ -351,9 +351,11 @@ ii. MESA_ES has positive coefficient (23.173, CI: 1.599, 44.747)
 -   no log transformation (but could do it)
 
 i.  geo_COI_3.0 has negative coefficient (-0.52009, CI: -0.9615, -0.07869)
-ii. None?
+ii. None
 
-C_MESA_ES has positive coefficient (11.39, CI: 6.074, 16.706). CHAOS has a negative coefficient (-11.972, CI: -20.200, -3.745).
+
+
+(C_ACTI_WakeTime (not using): C_MESA_ES has positive coefficient (11.39, CI: 6.074, 16.706). CHAOS has a negative coefficient (-11.972, CI: -20.200, -3.745).)
 
 <!-- -->
 
