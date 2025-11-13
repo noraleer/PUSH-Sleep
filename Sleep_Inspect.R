@@ -16,6 +16,10 @@ actigraphy_t1_dec <- actigraphy_t1 %>%
   select(-start_time_t1, -end_time_t1)
 
 actigraphy_t2_dec <- actigraphy_t2 %>% 
+<<<<<<< Updated upstream
   select(-start_time_t2, -end_time_t2)
 
 diary_t1$T1_DD_NightDate = as.Date(diary_t1$T1_DD_NightDate, origin = "1899-12-30")
+=======
+  select(-start_time_t2, -end_time_t2)
+>>>>>>> Stashed changes
