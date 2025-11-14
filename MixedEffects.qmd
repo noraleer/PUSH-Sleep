@@ -1,0 +1,386 @@
+---
+title: "Mixed Effects Models"
+format: 
+  html:
+    self-contained: true
+    embed-resources: true
+editor: visual
+execute: 
+  echo: true
+  include: true
+---
+
+## Background Information
+
+We have discussed linear and non-linear estimation procedures for multiple different regression models, including normal, logistic and Poisson regression. We have also checked the assumption of homoscedasticity and normality for normal models and goodness of fit tests for logistic and Poisson models. Finally we have discussed methods of inference by confidence intervals and hypothesis tests for these models and variable selection for determining the "best" model from a collection of alternatives. For all of these models, we have still assumed that all of the response variables are independent of each other. This set of lectures will discuss methods to perform data analysis when this assumption is violated.
+
+## Motivating Example
+
+Consider the sleep study dataset in the Data folder, which contains information on a study where 18 students were deprived of sleep over 10 days, and their reaction times (in ms) to a particular stimulus were recorded. The dataset contains the following variables
+
+-   Case: The case number
+
+-   Reaction: The reaction time (in milliseconds)
+
+-   Days: Number of days which the subject was sleep deprived
+
+-   Subject: Numeric ID of the subject being tested
+
+We would to predict a particular subject's reaction time over a particular number of days.
+
+```{r}
+sleepstudy <- read.csv("Data/sleepstudy.csv")
+mod <- lm(Reaction ~ Days + as.factor(Subject), sleepstudy)
+summary(mod)
+```
+
+Using previous methods, we can fit a linear model with the following mathematical form
+
+$$\boldsymbol{y} = \boldsymbol{X}\boldsymbol{\beta} + \boldsymbol{\epsilon}$$ where $\boldsymbol{X}$ is a model matrix with linear main effects for number of days and subject as well as (potentially) an interaction term between subject and number of days and $\boldsymbol{\epsilon} \sim \mathcal{N}(0,\boldsymbol{R} = \sigma^2 \boldsymbol{I})$ The estimate of $\boldsymbol{\beta}$ can be written as
+
+$$\hat{\boldsymbol{\beta}} = (\boldsymbol{X}'\boldsymbol{X})^{-1}\boldsymbol{X}'\boldsymbol{y}$$
+
+and we can perform inference on these effects. However, this model fails to take into account one key component. These are repeated measures on the same subject; therefore observations for the same subject may **NOT** be independent. One subjects reaction time on day 2 will be dependent on their reaction time on day 1.
+
+**Mixed Effects Model**: Regression model techniques incorporating both fixed and random effects to account for variability arising from unobserved or latent sources.
+
+-   **Fixed Effects**: Effects in a linear model structure that capture specific characteristics that remain constant across observations. (All effects in linear models we have previously discussed are fixed effects)
+
+-   **Random Effects**: Effects in a linear model structure that capture variability and differences between different entities or subjects within a larger group.
+
+For the sleep study example, we are sampling individuals from the population, and then for each subject, sampling their reaction times. For this reason, we should consider incorporating a random effect for the subject.
+
+The mathematical form of this regression structure is
+
+$$\boldsymbol{y} = \boldsymbol{X}\boldsymbol{\beta} + \boldsymbol{Z}\boldsymbol{u} + \boldsymbol{\epsilon}$$where $\boldsymbol{X}$ is the design matrix for the fixed effects, the $\beta$s are the fixed effects, $\boldsymbol{Z}$ is the design matrix for the random effects, $\boldsymbol{u}$ are the random effects of the model and $\boldsymbol{\epsilon}$ are the random errors of the model. Note, because $\boldsymbol{u}$ are random effects, they will have a specified distribution!
+
+$$\begin{bmatrix} \boldsymbol{u} \\ \boldsymbol{\epsilon} \end{bmatrix} \sim \mathcal{N}\left(\begin{bmatrix}\boldsymbol{0} \\ \boldsymbol{0} \end{bmatrix},\begin{bmatrix} \boldsymbol{G} & \boldsymbol{0} \\ \boldsymbol{0} & \boldsymbol{R} \end{bmatrix}\right)$$
+
+-   **Note**: In traditional mixed effects models, we assume that the distribution of the random effects $\boldsymbol{u}$ is independent of the distribution of the random errors $\boldsymbol{\epsilon}$
+-   $\boldsymbol{G}$ is the covariance matrix of the random effects. Often simplified so that the random effects are independent and homoscedastic.
+-   $\boldsymbol{R}$ is the covariance matrix of the random errors. Often simplified so that the random errors are independent and homoscedastic.
+
+It can be proven that
+
+-   $E(\boldsymbol{y} | \boldsymbol{u}) = \boldsymbol{X}\boldsymbol{\beta} + \boldsymbol{Z}\boldsymbol{u}$
+
+-   $\text{Var}(\boldsymbol{y} | \boldsymbol{u}) = \boldsymbol{R}$
+
+The above two statements give the mean and covariance of the response variable $\boldsymbol{y}$ if we treat $\boldsymbol{u}$ as fixed effects rather than random effects.
+
+-   $E(\boldsymbol{y}) = \boldsymbol{X}\boldsymbol{\beta}$
+
+-   $\text{Var}(\boldsymbol{y}) = \Sigma = \boldsymbol{Z}\boldsymbol{G}\boldsymbol{Z}' + \boldsymbol{R}$
+
+For the sleep study dataset, we can write a model as
+
+$$Y_{ij} = \beta_0 + \beta_1 i + u_j + \epsilon_{ij}$$
+
+-   $Y_{ij}$ is the observed response time on day $i$ for subject $j$
+
+-   $u_j \sim \mathcal{N}(0,\sigma_u^2)$. This is how we write independent and homoscedastic random effects. This implies that the $\boldsymbol{G} = diag(\sigma_u^2, \cdots, \sigma_u^2)$
+
+-   $\epsilon_{ij} \sim \mathcal{N}(0,\sigma_\epsilon^2)$. This is how we write independent and homoscedastic random errors. This implies that the v-cov matrix $\boldsymbol{R} = diag(\sigma^2, \cdots, \sigma^2)$
+
+Again, $u_j$ is defined as the random effect for subject $j$ and we assume the random effects are independent of the random errors.
+
+Let's calculate $E(Y_{ij})$, $\text{Var}(Y_{ij})$, $\text{Cov}(Y_{ij},Y_{i'j})$, $\text{Cov}(Y_{ij},Y_{i'j'})$ where $i \neq i'$ and $j \neq j'$
+
+-   $E(Y_{ij}) = E(\beta_0 + \beta_1 i + u_j + \epsilon_{ij}) = \beta_0 + \beta_1 i + E(u_j) + E(\epsilon_{ij}) = \beta_0 + \beta_1 i$
+
+-   $\text{Var}(Y_{ij}) = \text{Var}(\beta_0 + \beta_1 i + u_j + \epsilon_{ij}) = \text{Var}(u_j) + \text{Var}(\epsilon_{ij}) + 2\text{Cov}(u_j,\epsilon_{ij}) = \sigma_u^2 + \sigma_{\epsilon}^2$
+
+-   $\text{Cov}(Y_{ij},Y_{i'j}) = \text{Cov}(\beta_0 + \beta_1 i + u_j + \epsilon_{ij},\beta_0 + \beta_1 i' + u_j + \epsilon_{i'j}) = \text{Cov}(u_j,u_j) = \text{Var}(u_j) = \sigma_u^2$
+
+    -   This assumes that every $u$ is independent of every $\epsilon$ and all $\epsilon$ are independent of each other
+    -   The above is the covariance for the same subject on different days
+
+-   $\text{Cov}(Y_{ij},Y_{i'j'}) = \text{Cov}(\beta_0 + \beta_1 i + u_j + \epsilon_{ij},\beta_0 + \beta_1 i' + u_{j'} + \epsilon_{i'j'}) = \text{Cov}(u_j,u_{j'}) = 0$
+
+    -   The above is the covariance for different subjects (could be same days or different days).
+
+The covariance structure allows us to incorporate correlation between two observations on the same subject, but still assume independence between two observations on different subjects.
+
+## Estimation of Mixed Effects Models
+
+Recall the notation of $E(\boldsymbol{y})$ and $\text{Var}(\boldsymbol{y})$. Do either of these values contain the random effects $\boldsymbol{u}$? No!
+
+-   $\boldsymbol{u}$ are called **nuisance parameters** and, therefore, do not directly incorporate into the estimation of the mixed effects model. In other words we can integrate $\boldsymbol{u}$ out of our model, and still get a data model that is estimable.
+-   We are going to start by estimating the fixed effects, $\beta$; the covariance matrix of the random effects $\boldsymbol{G}$; and the covariance of the random errors $\boldsymbol{R}$
+
+Using the well-known fact that combining two normal distributions produces another normal distribution, we have the model $$\boldsymbol{y} \sim \mathcal{N}(\boldsymbol{X}\boldsymbol{\beta}, \Sigma = \boldsymbol{Z}\boldsymbol{G}\boldsymbol{Z}' + \boldsymbol{R})$$
+
+and the joint density function is
+
+$$f(\boldsymbol{y} | \boldsymbol{\beta},\Sigma) = \frac{1}{(2\pi)^{n/2}|\Sigma|^{1/2}}\exp\left\{-\frac{1}{2}(\boldsymbol{y} - \boldsymbol{X}\boldsymbol{\beta})'\Sigma^{-1}(\boldsymbol{y} - \boldsymbol{X}\boldsymbol{\beta})\right\}$$
+
+-   Therefore, we only need to estimate $\boldsymbol{\beta}$, $\boldsymbol{G}$, and $\boldsymbol{R}$. Unlike ordinary least squares, these methods do not have a closed form solution.
+
+### Estimation of $\boldsymbol{\beta}$, $\boldsymbol{G}$, and $\boldsymbol{R}$
+
+Taking the log of the joint density function, we obtain a log-likelihood function of
+
+$$l = -\frac{n}{2} \log 2\pi - \frac{1}{2} \log|\Sigma| - \frac{(\boldsymbol{y} - \boldsymbol{X}{\boldsymbol{\beta}})'\Sigma^{-1}(\boldsymbol{y} - \boldsymbol{X}{\boldsymbol{\beta}})}{2}$$
+
+We are attempting to find values of $\boldsymbol{\beta}$, $\boldsymbol{G}$ and $\boldsymbol{R}$ that maximize the above equation. Assuming that $\Sigma$ is a known matrix, using generalized least squares, we can obtain a best linear unbiased estimator (BLUE) of $\boldsymbol{\beta}$ as
+
+$$\hat{\boldsymbol{\beta}} = (\boldsymbol{X}'\Sigma^{-1}\boldsymbol{X})^{-1}\boldsymbol{X}'\Sigma^{-1}\boldsymbol{y},$$
+
+This is similar to the formula we used in weighted least squares when the weights were known. The difference now is $\Sigma$ can have correlations. Obviously, we cannot assume that $\Sigma$ is known because it is a function of the unknown variance-covariance matrices $\boldsymbol{G}$ and $\boldsymbol{R}$. So, the estimate above can be written as
+
+$$\hat{\boldsymbol{\beta}}(\boldsymbol{G},\boldsymbol{R}) = (\boldsymbol{X}'\Sigma^{-1}\boldsymbol{X})^{-1}\boldsymbol{X}'\Sigma^{-1}\boldsymbol{y}.$$
+
+$\hat{\boldsymbol{\beta}}$ is now written as a function of the covariance matrices $\boldsymbol{G}$ and $\boldsymbol{R}$
+
+Substituting in $\hat{\boldsymbol{\beta}}$ to the log-likelihood, and eliminating constants that don't factor into the maximization and incorporating the fact that $\Sigma$ is also a function of $\boldsymbol{G}$ and $\boldsymbol{R}$ we have
+
+$$l = - \frac{1}{2} \log|\Sigma(\boldsymbol{G},\boldsymbol{R})| - \frac{(\boldsymbol{y} - \boldsymbol{X}\hat{\boldsymbol{\beta}}'\Sigma^{-1}(\boldsymbol{y} - \boldsymbol{X}\hat{\boldsymbol{\beta}})}{2}$$ where $\hat{\boldsymbol{\beta}}$ and $\Sigma$ are functions of $\hat{\boldsymbol{G}}$ and $\hat{\boldsymbol{R}}$, which is used to find maximum likelihood estimates for $\hat{\boldsymbol{G}}$ and $\hat{\boldsymbol{R}}$ in addition to $\hat{\boldsymbol{\beta}}$ using the above formula and the given structure of $\boldsymbol{G}$ and $\boldsymbol{R}$. However, the issue with this method is $\hat{\boldsymbol{G}}$ and $\hat{\boldsymbol{R}}$ are not unbiased estimators for $\boldsymbol{G}$ and $\boldsymbol{R}$.
+
+-   This is similar to why we use the least squares estimate of $\sigma^2$ instead of the maximum likelihood estimate in multiple linear regression.
+
+Therefore, we typically use *restricted maximum likelihood* to estimate $\boldsymbol{G}$ and $\boldsymbol{R}$.
+
+-   This is the method used to get the least squares estimate of $\sigma^2$ in multiple linear regression
+
+We start by adjusting the likelihood function we want to maximize as
+
+$$l_r = -\frac{1}{2} \log|\Sigma| - \frac{1}{2} \log|\boldsymbol{X}'\Sigma\boldsymbol{X}| - \frac{(\boldsymbol{y} - \boldsymbol{X}\hat{\boldsymbol{\beta}})'\Sigma^{-1}(\boldsymbol{y} - \boldsymbol{X}\hat{\boldsymbol{\beta}})}{2}$$
+
+as our function that we want to maximize. In essence, we are adding a penalty term based on our design matrix $\boldsymbol{X}$. **Note**: many numerical studies have shown that $\hat{\boldsymbol{G}}$ and $\hat{\boldsymbol{R}}$ under REML are more accurate than maximum likelihood techniques, especially in small sample sizes.
+
+-   I do not expect you to know how to conduct restricted maximum likelihood analysis, **but I do expect you to know the difference between maximum likelihood and restricted maximum likelihood, mainly what type of estimators each method produces**
+
+## Example
+
+Provide estimates from the sleep study for the fixed effects and the variances for the random effects and random errors for the sleep study.
+
+-   lm cannot handle the incorporation of random effects
+
+-   lmer in the package lme4 handles the random effects using REML
+
+```{r}
+# The syntax for the fixed effects is the same as before
+# To incorporate random effects for subject, you will use the syntax (1 | z)
+library(lme4)
+mod_re <- lmer(Reaction ~ Days + (1|Subject), sleepstudy)
+summary(mod_re)
+```
+
+-   Fixed effects are presented the same as before (Note: no p-value exists because the sampling distribution of $\hat{\beta}$ is not a t-distribution)
+
+-   Variance of the random effects and the variance of the random errors are presented in the random effects table
+
+-   If we want to present an expectation of the reaction time by days with the random effects integrated out, $\hat{reaction} = ...$
+
+    -   $\hat{\sigma_{u}}^2$ = 1378.2 is the estimate of the variance of the random effects for subject
+
+    -   $\hat{\sigma_{\epsilon}}^2$ = 960.5 is the estimate of the variance of the errors/residuals
+
+### Prediction of random effects $\boldsymbol{u}$
+
+While not directly incorporated into our estimation procedure, we can obtain unbiased "estimations" of the random effects $\boldsymbol{u}$ that minimize the error variance. Because these are not estimated exactly, we refer to these values $\hat{\boldsymbol{u}}$ as best linear unbiased predictors (BLUP).
+
+We start by recognizing that
+
+$$\begin{bmatrix} \boldsymbol{y} \\ \boldsymbol{u} \end{bmatrix} \sim \mathcal{N}\left(\begin{bmatrix}\boldsymbol{X}\boldsymbol{\beta} \\ \boldsymbol{0} \end{bmatrix},\begin{bmatrix} \Sigma & \boldsymbol{Z}\boldsymbol{G} \\ \boldsymbol{G}\boldsymbol{Z}' & \boldsymbol{G} \end{bmatrix}\right)$$
+
+Using properties of the conditional normal distribution, we can say that
+
+$$\boldsymbol{u}|\boldsymbol{y} \sim \mathcal{N}(\hat{\boldsymbol{G}}\boldsymbol{Z}'\hat{\Sigma}^{-1}(\boldsymbol{y} - \boldsymbol{X}\hat{\boldsymbol{\beta}}),\hat{\boldsymbol{G}} - \hat{\boldsymbol{G}}\boldsymbol{Z}'\hat{\Sigma}^{-1}\boldsymbol{Z}\hat{\boldsymbol{G}})$$ At a high level, the BLUP of the random effects is calculated from the
+
+-   Data generating process: $\boldsymbol{y} \sim \mathcal{N}(\boldsymbol{X}\boldsymbol{\beta} + \boldsymbol{Z}\boldsymbol{u},\boldsymbol{R})$
+
+-   "Prior" random process: $\boldsymbol{u} \sim \mathcal{N}(0,\boldsymbol{G})$
+
+to obtain $\hat{\boldsymbol{u}}$ which maximizes the "posterior" distribution of the random effects conditioning on the observed data
+
+$$
+\hat{\boldsymbol{u}} = \hat{\boldsymbol{G}}\boldsymbol{Z}'\hat{\Sigma}^{-1}(\boldsymbol{y} - \boldsymbol{X}\hat{\boldsymbol{\beta}})
+$$
+
+## Example
+
+Perform mixed effects regression on the sleep study dataset with a fixed effect for the number of days and a random effect for the subject.
+
+-   lm in R can only handle models with fixed effects
+
+-   lmer in the package lme4 can incorporate models with fixed effects and random effects
+
+-   The syntax for mixed effects models is
+
+    -   lmer(y \~ x1 + x2 + ... + xn + (z1 + ...),data)
+
+    -   The values outside the parentheses are fixed effects, the values inside the parentheses are random effects
+
+-   lmer by default uses restricted maximum likelihood (REML) to estimate the model parameters
+
+Recall the model for the sleep study dataset
+
+$y_{ij} = \beta_0 + \beta_1 i + u_j + \epsilon_{ij}$
+
+-   We are adding a random intercept for each subject
+
+-   The syntax for a random intercept is (1\|subject)
+
+```{r}
+# Lets find the estimates of the random effects (BLUPs) for the sleep study dataset
+ranef(mod_re) # This produces the random intercept for each subject
+# We can now use these to find predictions
+predict(mod_re) # Uses both the BLUE of the fixed effects and the BLUP of the random effects
+```
+
+## Confidence intervals for Fixed Effects
+
+Using the CLT, if the error degrees of freedom $n-k$ is sufficiently large, $$\frac{\hat{\beta}_j - \beta_j}{\sqrt{\hat{\text{Var}}(\hat{\beta}_j)}} \sim \mathcal{N}(0,1)$$
+
+for $j = 1,\cdots,k-1$ where $\hat{\text{Var}}(\hat{\boldsymbol{\beta}}) = (\boldsymbol{X}'\Sigma^{-1}\boldsymbol{X})^{-1}$.
+
+### 100(1 - $\alpha$)% Wald confidence interval for $\beta_j$
+
+$$\hat{\beta}_j \pm z^*_{1-\frac{\alpha}{2}}\sqrt{\hat{\text{Var}}(\hat{\beta}_j)}$$
+
+A more exact confidence interval can be calculated using the fact that, if the sample size is sufficiently large, then
+
+$$-2\left[\sum_{i=1}^n l_r(y_i,\boldsymbol{\beta},\boldsymbol{G},\boldsymbol{R}) - \sum_{i=1}^n l_r(y_i,\hat{\boldsymbol{\beta}},\boldsymbol{G},\boldsymbol{R}) \right] \sim \chi^2_{n-k}$$ Optimization searching algorithms can be used to find a **profile** confidence interval
+
+### 100(1 - $\alpha$) profile confidence interval for $\beta_j$
+
+$$\left\{{\beta}_j : -2\left[\sum_{i=1}^n l_r(y_i,\boldsymbol{\beta},\boldsymbol{G},\boldsymbol{R}) - \sum_{i=1}^n l_r(y_i,\hat{\boldsymbol{\beta}},\boldsymbol{G},\boldsymbol{R})\right] \leq \chi^{2*}_{1-\alpha,n-k}\right\}$$
+
+This type of confidence interval is what R calculates in confint.
+
+### Example
+
+Calculate and interpret 95% Wald and profile confidence intervals for the fixed effect for number of days.
+
+Wald intervals assume normality and are easier to compute for multidimensional data, but you should typically use a Wald interval.
+
+```{r}
+# 95% Wald Confidence intervals... only for fixed effects
+est <- fixef(mod_re)["Days"]
+var_est <- vcov(mod_re)["Days", "Days"]
+crit <- pnorm(.975)
+est + c(-1,1) * crit * sqrt(var_est)
+# 95% Profile confidence interval
+confint(mod_re, "Days")
+```
+
+Use the profile confidence interval if you have a dispute because it is more accurate than the Wald interval.
+
+For fixed effects, the interpretation is the same as before.
+
+We are 95% confident that for a 1 day increase in sleep deprivation, the expected reaction time increases by between 8.887 and 12.05 milliseconds, holding the subject constant.
+
+There is a way to do hypothesis testing for mixed effects models, but it's not something that we will discuss in this class.
+
+## Confidence intervals for the random effects
+
+From the distribution of $\boldsymbol{u}|\boldsymbol{y}$, $$\frac{\hat{u}_j - u_j}{\sqrt{\hat{\text{Var}}(\hat{u}_j)}} \sim \mathcal{N}(0,1)$$
+
+for $j = 1,\cdots,k-1$
+
+### 100(1 - $\alpha$)% Wald confidence interval for $u_j$
+
+$$\hat{u}_j \pm z^*_{1-\frac{\alpha}{2}}\sqrt{\hat{\text{Var}}(\hat{u}_j)}$$
+
+Because the distribution of $\boldsymbol{u}|\boldsymbol{y}$ is normal, the Wald confidence interval will be an **exact** interval.
+
+### Example
+
+Calculate and interpret 95% Wald confidence interval for the random effect for subject 330.
+
+Skip for now
+
+```{r}
+
+```
+
+## Predictions from a mixed effects model
+
+Because we can obtain BLUE for the fixed effects $\hat{\boldsymbol{\beta}}$ and a BLUP for the random effect $\hat{\boldsymbol{u}}$, a prediction from the model can be calculated as
+
+$\hat{\mu}_{\boldsymbol{y} | \boldsymbol{x}_0,\boldsymbol{z}_0} = \boldsymbol{x}_0 \hat{\boldsymbol{\beta}} + \boldsymbol{z}_0 \hat{\boldsymbol{u}}$
+
+The variance of this estimate can be calculated as
+
+$\text{Var}(\hat{\mu}_{\boldsymbol{y} | \boldsymbol{x}_0,\boldsymbol{z}_0}) = \boldsymbol{x}_0 \text{Var}(\hat{\boldsymbol{\beta}})\boldsymbol{x}_0' + \boldsymbol{z}_0 \text{Var}(\hat{\boldsymbol{u}})\boldsymbol{z}_0'$
+
+For the following calculations, assume that $\boldsymbol{R} = \sigma^2 \boldsymbol{I}$ or independent identical distribution
+
+### 100(1 - $\alpha$)% confidence interval for ${\mu}_{\boldsymbol{y} | \boldsymbol{x}_0,\boldsymbol{z}_0}$
+
+$\hat{\mu}_{\boldsymbol{y} | \boldsymbol{x}_0,\boldsymbol{z}_0} \pm z_{1-\frac{\alpha}{2}}^* \sqrt{\hat{\text{Var}}(\hat{\mu}_{\boldsymbol{y} | \boldsymbol{x}_0,\boldsymbol{z}_0})}$
+
+### 100(1 - $\alpha$)% prediction interval for $\boldsymbol{y}_{ \boldsymbol{x}_0,\boldsymbol{z}_0}$
+
+$\boldsymbol{y}_{ \boldsymbol{x}_0,\boldsymbol{z}_0} \pm z_{1-\frac{\alpha}{2}}^* \sqrt{\hat{\sigma}^2+ \hat{\text{Var}}(\hat{\mu}_{\boldsymbol{y} | \boldsymbol{x}_0,\boldsymbol{z}_0})}$
+
+```{r}
+# Let's calculate the prediction for subject 330 after four days of sleep deprivation
+# estimate of the fixed effects
+est_fix <- 251.4051 + 10.4673*4
+# Estimate of the random effects
+est_rand <- ranef(mod_re)$Subject["330",]
+# Total estimate
+est_fix + est_rand
+predict(mod_re, data.frame(Days=4, Subject = "330"))
+```
+
+-   If you want to check the assumptions of normality, you need to check that the random effects and residuals are both normally distributed (don't forget to standardize)
+
+-   Generalized linear models can also be extended to include normal random effects (using the function glmer)
+
+### Adding random slopes to a mixed effects model
+
+-   The above model assumes that we have a random intercept for each subject.
+
+-   A random slope means that now the parameter associated with the number of days is assumed to be random as well.
+
+This is a way to code the following model
+
+$$
+Y_{ij} = \beta_0 + \beta_1 i + u_{0j} + u_{1j} i + \epsilon_{ij}
+$$
+
+In other words, I want the linear relationship between days of sleep and reaction time to be different for the different subjects, and I want to incorporate this as a random effect.
+
+```{r}
+mod_re_slope <- lmer(Reaction ~ Days + (1 + Days|Subject), sleepstudy)
+summary(mod_re_slope)
+```
+
+-   R by default adds a correlation btween random effects in the same grouping structure (1 + Days\|Subject)
+
+-   Variance of the random intercept ($\hat{\sigma}_0^2 = 612.10$)
+
+-   Variance of the random slope ($\hat{\sigma}_1^2 = 35.07$)
+
+-   Correlation between the random effects $\rho_{01} = 0.07$
+
+-   Variance of the residuals $\hat{\sigma}^2 = 654.94$
+
+You can compare these models through their log-likelihoods and their AICs
+
+```{r}
+logLik(mod_re) # Four parameters are beta0, beta1, sigma u and sigma epsilon for the original random effects model
+logLik(mod_re_slope) # Adding parameters for the variance of the slope random effects and the correlation
+AIC(mod_re)
+AIC(mod_re_slope)
+```
+
+The AIC for the mod with the random slope is lower.
+
+The values of the random effects essentially determine deviation for a particular subject from the mean.
+
+```{r}
+ranef(mod_re)$Subject
+mean(ranef(mod_re)$Subject[,1]) # Average of the BLUPs of the random effects
+
+ranef(mod_re_slope)
+```
+
+-   For the intercept, it is the expected deviation for each subject from the estimate of the fixed effect for the intercept.
+
+-   For the slope, it is the expected deviation for each subject from the estimate of the fixed effect or the slope.
+
+-   All random effects will average out to be zero because of the statements above
