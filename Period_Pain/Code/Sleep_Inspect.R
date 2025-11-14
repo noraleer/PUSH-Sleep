@@ -60,6 +60,3 @@ t1 <- t1_joined %>%
 setdiff(names(t2), names(t1))
 setdiff(names(t1), names(t2)) # Everything in t1 is present in t2, but MedType6 is not present in t1. 
 
-t1 %>% 
-  mutate(T_DD_NapOnset = as.double(T_DD_NapOnset)) %>% 
-  view()
