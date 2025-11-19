@@ -60,3 +60,20 @@ t1 <- t1_joined %>%
 setdiff(names(t2), names(t1))
 setdiff(names(t1), names(t2)) # Everything in t1 is present in t2, but MedType6 is not present in t1. 
 
+# TO DO...
+# 1) Make sure all variables are of the same class between the t1 and t2 datasets
+# 2) Figure out what to do with MedType6
+# 3) Change all -999 variables to NA
+t1 %>% 
+  filter(T_DD_Period == 1) %>% 
+  select(C_ID, T_DD_Period, T_DD_PeriodPain, T_DD_PeriodDay) %>%
+  group_by(C_ID) %>% 
+  summarise(num_days = n_distinct(T_DD_PeriodDay)) %>% 
+  view()
+
+t2 %>% 
+  filter(T_DD_Period == 1) %>% 
+  select(C_ID, T_DD_Period, T_DD_PeriodPain, T_DD_PeriodDay) %>%
+  group_by(C_ID) %>% 
+  summarise(num_days = n_distinct(T_DD_PeriodDay)) %>% 
+  view()
