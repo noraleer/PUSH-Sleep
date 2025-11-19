@@ -77,3 +77,11 @@ t2 %>%
   group_by(C_ID) %>% 
   summarise(num_days = n_distinct(T_DD_PeriodDay)) %>% 
   view()
+
+glimpse(t1)
+glimpse(t2)
+
+t1[t1==-999] = NA
+
+t1  
+t2[t2==-999] = NA
