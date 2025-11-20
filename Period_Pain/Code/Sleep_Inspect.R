@@ -64,13 +64,14 @@ setdiff(names(t1), names(t2)) # Everything in t1 is present in t2, but MedType6 
 # 1) Make sure all variables are of the same class between the t1 and t2 datasets
 # 2) Figure out what to do with MedType6
 # 3) Change all -999 variables to NA
+# 4) Update DayType using NightDate to be school night or not school night
 t1 %>% 
   filter(T_DD_Period == 1) %>% 
   select(C_ID, T_DD_Period, T_DD_PeriodPain, T_DD_PeriodDay) %>%
   group_by(C_ID) %>% 
   summarise(num_days = n_distinct(T_DD_PeriodDay)) %>% 
   view()
-
+ 
 t2 %>% 
   filter(T_DD_Period == 1) %>% 
   select(C_ID, T_DD_Period, T_DD_PeriodPain, T_DD_PeriodDay) %>%
@@ -78,10 +79,12 @@ t2 %>%
   summarise(num_days = n_distinct(T_DD_PeriodDay)) %>% 
   view()
 
-glimpse(t1)
-glimpse(t2)
-
+#Replacing 999 with NAs in t1 and t2
 t1[t1==-999] = NA
 
 t1  
 t2[t2==-999] = NA
+
+glimpse(t1)
+glimpse(t2)
+
