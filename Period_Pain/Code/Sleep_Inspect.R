@@ -62,7 +62,7 @@ setdiff(names(t1), names(t2)) # Everything in t1 is present in t2, but MedType6 
 
 # TO DO...
 # 1) Make sure all variables are of the same class between the t1 and t2 datasets
-# 2) Figure out what to do with MedType6
+# 2) Figure out what to do with MedType6 (exists in t2 and not t1)
 # 3) Change all -999 variables to NA (done)
 # 4) Update DayType using NightDate to be school night or not school night (done)
 t1 %>% 
@@ -92,4 +92,16 @@ glimpse(t2)
 #Update DayType to 1 is friday-saturday and 0 is any other night
 t1 <- t1 %>% mutate(weekend = ifelse((wday(T_DD_NightDate, label = TRUE)) %in% c("Fri","Sat"),1,0))
 t2 <- t2 %>% mutate(weekend = ifelse((wday(T_DD_NightDate, label = TRUE)) %in% c("Fri","Sat"),1,0))
+
+
+#Binding the times into one dataset
+rbind()
+
+#create a variable for checking for painkiller (ibuprofen, tylenol)
+table(t1$T_DD_MedType1)
+table(t2$T_DD_MedType6)
+
+table(t2$T_DD_MedType1)
+
+t1 <- t1 %>% mutate(painkiller = ifelse(T_DD_MedType1 %in% c("advil","ibuprofen","Ibuprofen","Ibuprofin"),1,0))
 
