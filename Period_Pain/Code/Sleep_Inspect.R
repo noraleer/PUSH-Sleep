@@ -63,7 +63,7 @@ setdiff(names(t1), names(t2)) # Everything in t1 is present in t2, but MedType6 
 # TO DO...
 # 1) Make sure all variables are of the same class between the t1 and t2 datasets
 # 2) Figure out what to do with MedType6
-# 3) Change all -999 variables to NA
+# 3) Change all -999 variables to NA (done)
 # 4) Update DayType using NightDate to be school night or not school night
 t1 %>% 
   filter(T_DD_Period == 1) %>% 
@@ -81,10 +81,13 @@ t2 %>%
 
 #Replacing 999 with NAs in t1 and t2
 t1[t1==-999] = NA
-
+t1[t1==-99] = NA
 t1  
 t2[t2==-999] = NA
+t2[t2==-99] = NA
 
 glimpse(t1)
 glimpse(t2)
+
+#Update DayType to 1 is friday-saturday and 0 is friday-saturday night
 
