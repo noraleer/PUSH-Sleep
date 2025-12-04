@@ -103,5 +103,61 @@ table(t2$T_DD_MedType6)
 
 table(t2$T_DD_MedType1)
 
+#Add painkiller indicator
 t1 <- t1 %>% mutate(painkiller = ifelse(T_DD_MedType1 %in% c("advil","ibuprofen","Ibuprofen","Ibuprofin"),1,0))
+t2 <- t2 %>% mutate(painkiller = ifelse(T_DD_MedType1 %in% c("advil","Advil","ibuprofen","Ibuprofen","Ibuprofin","tylenol") |
+                                        T_DD_MedType2 %in% c("advil","Advil","ibuprofen","Ibuprofen","Ibuprofin","tylenol") |
+                                        T_DD_MedType6 %in% c("advil","Advil","ibuprofen","Ibuprofen","Ibuprofin","tylenol"),1,0))
+
+#Add time variable
+t1 <- t1 %>% mutate(Time = 1, 
+                    T_DD_NapOnset = as.numeric(T_DD_NapOnset),
+                    T_DD_NapDuration = as.numeric(T_DD_NapDuration),
+                    T_DD_ActiDur = as.numeric(T_DD_ActiDur),
+                    T_DD_SleepyAlert = as.numeric(T_DD_SleepyAlert),
+                    T_DD_MorningDate = as.numeric(T_DD_MorningDate))
+t2 <- t2 %>% mutate(Time = 2, 
+                    T_DD_NapOnset = as.numeric(T_DD_NapOnset),
+                    T_DD_NapDuration = as.numeric(T_DD_NapDuration),
+                    T_DD_SleepyAlert = as.numeric(T_DD_SleepyAlert),
+                    T_DD_MorningDate = as.numeric(T_DD_MorningDate))
+
+t1 <- t1 %>% select(-c(T_DD_MedType1:T_DD_MedTime5))
+t2 <- t2 %>% select(-c(T_DD_MedType1:T_DD_MedTime6))
+
+
+sleepfull <- bind_rows(t1, t2)
+
+#How many unique peopel are there at each time point. 
+#How many days is someone on their period. 
+#How many are ever on their periods
+
+table(sleepfull$T_DD_Period)
+89/(528+89+1)
+table(sleepfull$T_DD_Period, sleepfull$Time)
+49/(374+49+1)
+40/(164+40)
+
+#How many days on period at time 1 and time 2.  
+sleepfull %>% group_by(Time, T_DD_Period) %>% summarize(n = n())
+
+sleepfull %>% group_by(Time, T_DD_Period) %>% summarize(mn = mean(T_DD_PeriodPain, na.rm = T), n = n())
+
+sleepfull %>% filter(T_DD_Period == 0 & Time == 1 ) %>% select(C_ID, T_DD_Period,T_DD_PeriodDay, T_DD_PeriodPain, T_DD_PeriodFlow) %>% View()
+sleepfull %>% filter(T_DD_Period == 0 & Time == 2 ) %>% select(C_ID, T_DD_Period,T_DD_PeriodDay, T_DD_PeriodPain, T_DD_PeriodFlow) %>% View()
+
+
+
+#Person 404 is reporting period pain and flow at time 2 but period is 0. 
+
+
+
+
+
+
+
+
+
+
+
 
