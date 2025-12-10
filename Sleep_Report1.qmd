@@ -1,0 +1,23 @@
+---
+title: "Report_1"
+format: html
+editor: visual
+---
+
+## Period Pain Models
+
+-   Three mixed models predicting sleep time (all, 0, and 1)
+
+-   Three mixed models predicting offset/wake time (all, 0, and 1)
+
+-   Three mixed models predicting onset/time for falling asleep (all, 0, and 1)
+
+-   Three mixed models predicting sleep efficiency (all, 0, and 1)
+
+-   Three mixed models predicting awakenings (all, 0, and 1)
+
+## Code
+
+```{r}
+
+```
