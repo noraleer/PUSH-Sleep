@@ -162,7 +162,7 @@ EDA
 #How many are ever on their periods
 
 table(sleepfull$T_DD_Period)
-89/(528+89+1)
+89/(538+89+1)
 table(sleepfull$T_DD_Period, sleepfull$Time)
 49/(374+49+1)
 40/(164+40)
