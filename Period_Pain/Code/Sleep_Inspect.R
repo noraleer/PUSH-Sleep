@@ -1,6 +1,6 @@
 library(tidyverse)
 
-Empathy <- readxl::read_xlsx("./Period_Pain/Data/Empathy_Data_9.25.2025_HLM Analyses.xlsx")
+Empathy <- read_csv("./Period_Pain/Data/Empathy_Data_Updated.csv")
 
 actigraphy_t1 <- readxl::read_xlsx("./Period_Pain/Data/Esleep_T1_Sleep Data_DailyActi_4.22.25.xlsx")
 
@@ -134,6 +134,8 @@ t2 <- t2 %>% left_join(Empathy %>% select(C_ID, demo_child_age_check_t2:BMIt2), 
 names(t2)[grepl("t2",names(t2))] <- gsub("_t2","",names(t2)[grepl("t2",names(t2))])
 names(t2)[grepl("t2",names(t2))] <- gsub("t2","",names(t2)[grepl("t2",names(t2))])
 names(t2)[names(t2) == "weigh"] <- "weight2"
+
+t2$BMI <- as.numeric(t2$BMI) 
 sleepfull <- bind_rows(t1, t2)
 
 sleepfull <- sleepfull %>% left_join(Empathy %>% select(C_ID,BodyTotalt0) %>% mutate(BodyTotalt0 = as.numeric(BodyTotalt0)), by = "C_ID")
@@ -154,7 +156,7 @@ table(sleepfull$T_DD_PeriodFlow)
 table(sleepfull$T_DD_PeriodFlow)
 
 ####################################
-EDA
+# EDA
 ####################################
 
 #How many unique peopel are there at each time point. 
@@ -225,7 +227,7 @@ summary(mod_sleep_time_1)
 ############################
 #Offset/Waketime (end_time_dec_t2)
 ############################
-library(lme4)
+
 #C_ID 494 is waking up at like 10pm?
 ggplot(aes(x = end_time_dec_T), data = sleepfull) + geom_histogram()
 sleepfull %>% filter(end_time_dec_T > 20)
@@ -244,7 +246,6 @@ summary(mod_offset_1)
 ############################
 #Onset/Falling Asleep (start_time_TRM_t2)
 ############################
-library(lme4)
 
 mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + T_DD_Period:T_DD_PeriodPain + T_DD_Period:T_DD_PeriodFlow + BMI + demo_degree + I(age-13) * Time +  (1|C_ID) , data = sleepfull)
 summary(mod_onset_all)
@@ -260,7 +261,6 @@ summary(mod_onset_1)
 ############################
 #Efficiency (efficiency_t2)
 ############################
-library(lme4)
 
 mod_eff_all <- lmer(efficiency_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + T_DD_Period:T_DD_PeriodPain + T_DD_Period:T_DD_PeriodFlow + BMI + demo_degree + I(age-13) * Time +  (1|C_ID) , data = sleepfull)
 summary(mod_eff_all)
@@ -275,7 +275,7 @@ summary(mod_eff_1)
 ############################
 #Awakenings (waso_t2)
 ############################
-library(lme4)
+
 hist(sleepfull$waso_T)
 
 mod_waso_all <- lmer(log(waso_T + 1) ~ 1 + BodyTotalt0 + weekend + T_DD_Period + T_DD_Period:T_DD_PeriodPain + T_DD_Period:T_DD_PeriodFlow + BMI + demo_degree + I(age-13) * Time +  (1|C_ID) , data = sleepfull)
@@ -291,23 +291,161 @@ summary(mod_waso_1)
 
 
 
-
-Timing 
-Offset/Waketime (end_time_dec_t2)
-Onset/Falling Asleep (start_time_TRM_t2)
-Quality 
-Efficiency (efficiency_t2)
-Awakenings (waso_t2)
-
-
+# 
+# Timing 
+# Offset/Waketime (end_time_dec_t2)
+# Onset/Falling Asleep (start_time_TRM_t2)
+# Quality 
+# Efficiency (efficiency_t2)
+# Awakenings (waso_t2)
 
 
 
 
+# JOSIE PRELIMINARY MODELS
+
+# no interaction terms between period and pain/flow
+# kept interaction term between age and time
+
+############################
+#Duration sleep_time_1
+############################
+
+# pain
+
+mod_sleep_time_all <- lmer(sleep_time_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+summary(mod_sleep_time_all)
+
+mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+mod_sleep_time_1 <- lmer(sleep_time_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_sleep_time_0)
+summary(mod_sleep_time_1)
+
+
+# flow
+
+mod_sleep_time_all <- lmer(sleep_time_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+summary(mod_sleep_time_all)
+
+mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+mod_sleep_time_1 <- lmer(sleep_time_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_sleep_time_0)
+summary(mod_sleep_time_1)
 
 
 
+############################
+#Offset/Waketime (end_time_dec_t2)
+############################
+
+#C_ID 494 is waking up at like 10pm?
+ggplot(aes(x = end_time_dec_T), data = sleepfull) + geom_histogram()
+sleepfull %>% filter(end_time_dec_T > 20)
+
+sleepfull$end_time_dec_T[!is.na(sleepfull$end_time_dec_T) & sleepfull$end_time_dec_T > 20] <- sleepfull$end_time_dec_T[!is.na(sleepfull$end_time_dec_T) & sleepfull$end_time_dec_T > 20] - 24
+
+# pain
+
+mod_offset_all <- lmer(end_time_dec_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+summary(mod_offset_all)
+
+mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+mod_offset_1 <- lmer(end_time_dec_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_offset_0)
+summary(mod_offset_1)
+
+
+# flow
+
+mod_offset_all <- lmer(end_time_dec_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+summary(mod_offset_all)
+
+mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+mod_offset_1 <- lmer(end_time_dec_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_offset_0)
+summary(mod_offset_1)
 
 
 
+############################
+#Onset/Falling Asleep (start_time_TRM_t2)
+############################
 
+# pain
+
+mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+summary(mod_onset_all)
+plot(mod_onset_all)
+
+mod_onset_0 <- lmer(start_time_TRM_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+mod_onset_1 <- lmer(start_time_TRM_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_onset_0)
+summary(mod_onset_1)
+
+
+# flow
+
+mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+summary(mod_onset_all)
+plot(mod_onset_all)
+
+mod_onset_0 <- lmer(start_time_TRM_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+mod_onset_1 <- lmer(start_time_TRM_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_onset_0)
+summary(mod_onset_1)
+
+
+############################
+#Efficiency (efficiency_t2)
+############################
+
+# pain
+
+mod_eff_all <- lmer(efficiency_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+summary(mod_eff_all)
+plot(mod_eff_all)
+
+mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+mod_eff_1 <- lmer(efficiency_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_eff_0)
+summary(mod_eff_1)
+
+
+# flow
+
+mod_eff_all <- lmer(efficiency_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+summary(mod_eff_all)
+plot(mod_eff_all)
+
+mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+mod_eff_1 <- lmer(efficiency_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_eff_0)
+summary(mod_eff_1)
+
+############################
+#Awakenings (waso_t2)
+############################
+
+hist(sleepfull$waso_T) # might need log
+
+# pain
+
+mod_waso_all <- lmer(waso_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+summary(mod_waso_all)
+plot(mod_waso_all)
+
+mod_waso_0 <- lmer(waso_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+mod_waso_1 <- lmer(waso_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_waso_0)
+summary(mod_waso_1)
+
+# flow
+
+mod_waso_all <- lmer(waso_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+summary(mod_waso_all)
+plot(mod_waso_all)
+
+mod_waso_0 <- lmer(waso_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+mod_waso_1 <- lmer(waso_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_waso_0)
+summary(mod_waso_1)
