@@ -95,7 +95,7 @@ t2 <- t2 %>% mutate(weekend = ifelse((wday(T_DD_NightDate, label = TRUE)) %in% c
 
 
 #Binding the times into one dataset
-rbind()
+
 
 #create a variable for checking for painkiller (ibuprofen, tylenol)
 table(t1$T_DD_MedType1)
@@ -140,13 +140,24 @@ sleepfull <- bind_rows(t1, t2)
 
 sleepfull <- sleepfull %>% left_join(Empathy %>% select(C_ID,BodyTotalt0) %>% mutate(BodyTotalt0 = as.numeric(BodyTotalt0)), by = "C_ID")
 
+#
 sleepfull <- sleepfull %>% mutate(demo_child_age_check = as.numeric(demo_child_age_check)) %>% rename(age = demo_child_age_check)
 sleepfull <- sleepfull %>% mutate(BMI = as.numeric(BMI)) 
-sleepfull <- sleepfull %>% filter(T_DD_Period %in% c(0,1))
-sleepfull <- sleepfull %>% mutate(T_DD_PeriodPain = ifelse(is.na(T_DD_PeriodPain),0,T_DD_PeriodPain))
-sleepfull <- sleepfull %>% mutate(T_DD_PeriodFlow = ifelse(is.na(T_DD_PeriodFlow),0,T_DD_PeriodFlow))
-sleepfull <- sleepfull %>% mutate(T_DD_PeriodPain = ifelse(T_DD_PeriodPain == 88,8,T_DD_PeriodPain))
+#sleepfull <- sleepfull %>% mutate(T_DD_PeriodPain = ifelse(is.na(T_DD_PeriodPain),0,T_DD_PeriodPain))
+#sleepfull <- sleepfull %>% mutate(T_DD_PeriodFlow = ifelse(is.na(T_DD_PeriodFlow),0,T_DD_PeriodFlow))
 
+#Manual fixes 
+#Correcting C_ID 484
+sleepfull <- sleepfull %>% mutate(T_DD_PeriodPain = ifelse(T_DD_PeriodPain == 88,0,T_DD_PeriodPain))
+sleepfull <- sleepfull %>% mutate(T_DD_Period = ifelse(T_DD_Period == 9,0,T_DD_Period))
+#404 
+sleepfull <- sleepfull %>% mutate(T_DD_Period = ifelse(T_DD_PeriodFlow > 0 & CI_D == 404,1,T_DD_Period))
+#442
+sleepfull <- sleepfull %>% mutate(T_DD_Period = ifelse(T_DD_PeriodFlow > 0 & CI_D == 404,1,T_DD_Period))
+
+
+
+sleepfull %>% filter(C_ID == 442) %>% select(C_ID, T_DD_NightDate,T_DD_Period, T_DD_PeriodFlow, T_DD_PeriodPain) %>% View()
 table(sleepfull$demo_degree)
 table(sleepfull$T_DD_PeriodPain,sleepfull$T_DD_Period)
 table(sleepfull$T_DD_PeriodPain)
@@ -175,8 +186,15 @@ sleepfull %>% group_by(Time, T_DD_Period) %>% summarize(n = n())
 sleepfull %>% group_by(Time, T_DD_Period) %>% summarize(mn = mean(T_DD_PeriodPain, na.rm = T), n = n())
 
 #Person 404 is reporting period pain and flow at time 2 but period is 0. 
+sleepfull %>% filter(T_DD_Period == 0 & Time == 0 ) %>% select(C_ID, T_DD_Period,T_DD_PeriodDay, T_DD_PeriodPain, T_DD_PeriodFlow) %>% View()
 sleepfull %>% filter(T_DD_Period == 0 & Time == 1 ) %>% select(C_ID, T_DD_Period,T_DD_PeriodDay, T_DD_PeriodPain, T_DD_PeriodFlow) %>% View()
 sleepfull %>% filter(T_DD_Period == 0 & Time == 2 ) %>% select(C_ID, T_DD_Period,T_DD_PeriodDay, T_DD_PeriodPain, T_DD_PeriodFlow) %>% View()
+
+sleepfull %>% filter(C_ID == 404) %>% select(C_ID, T_DD_NightDate,T_DD_Period,T_DD_PeriodDay, T_DD_PeriodPain, T_DD_PeriodFlow) %>% View()
+#table(sleepfull$T_DD_PeriodFlow)
+#table(sleepfull$T_DD_PeriodPain)
+
+
 
 sleepfull %>% group_by(Time) %>% summarise(mn = mean(painkiller), n = n(), sum(painkiller))
 
@@ -312,6 +330,12 @@ summary(mod_waso_1)
 ############################
 
 # pain
+#To do:
+#1. Drop demo_degree 
+#2. Replace Body Total t0 with Body Total t1 and t2.  
+#3. Should we add pain killer to model?  
+#4. Jules: Update Period to be 1 id Pain>0 and/or Flow > 0 
+
 
 mod_sleep_time_all <- lmer(sleep_time_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo_degree + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_sleep_time_all)
