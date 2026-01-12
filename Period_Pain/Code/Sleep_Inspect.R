@@ -10,6 +10,10 @@ diary_t1 <- readxl::read_xlsx("./Period_Pain/Data/E-Sleep_DailyDiary_FINAL_T1Dat
 
 diary_t2 <- readxl::read_xlsx("./Period_Pain/Data/E-Sleep_DailyDiary_FINAL_T2Data_updated1.10.26.xlsx")
 
+##########
+# CLEANING
+##########
+
 ## Going to have to rename subject_id 
 
 actigraphy_t1_dec <- actigraphy_t1 %>% 
@@ -93,14 +97,12 @@ glimpse(t2)
 t1 <- t1 %>% mutate(weekend = ifelse((wday(T_DD_NightDate, label = TRUE)) %in% c("Fri","Sat"),1,0))
 t2 <- t2 %>% mutate(weekend = ifelse((wday(T_DD_NightDate, label = TRUE)) %in% c("Fri","Sat"),1,0))
 
-
-
 #Binding the times into one dataset
 
 #create a variable for checking for painkiller (ibuprofen, tylenol)
 table(t1$T_DD_MedType1)
-table(t2$T_DD_MedType6)
 
+table(t2$T_DD_MedType6)
 table(t2$T_DD_MedType1)
 
 #Add painkiller indicator
@@ -125,20 +127,24 @@ t2 <- t2 %>% mutate(Time = 1,
 t1 <- t1 %>% select(-c(T_DD_MedType1:T_DD_MedTime5))
 t2 <- t2 %>% select(-c(T_DD_MedType1:T_DD_MedTime6))
 
-
-t1 <- t1 %>% left_join(Empathy %>% select(C_ID, demo_child_age_check_t1:BMIt1), by = "C_ID")
+t1 <- t1 %>% left_join(Empathy %>% select(C_ID, demo_child_age_check_t1:weight3t1, BodyTotalt1), by = "C_ID")
 names(t1)[grepl("t1",names(t1))] <- gsub("_t1","",names(t1)[grepl("t1",names(t1))])
 names(t1)[grepl("t1",names(t1))] <- gsub("t1","",names(t1)[grepl("t1",names(t1))])
 
-t2 <- t2 %>% left_join(Empathy %>% select(C_ID, demo_child_age_check_t2:BMIt2), by = "C_ID")
+t2 <- t2 %>% left_join(Empathy %>% select(C_ID, demo_child_age_check_t2:weightdifft2, BodyTotalt2), by = "C_ID")
 names(t2)[grepl("t2",names(t2))] <- gsub("_t2","",names(t2)[grepl("t2",names(t2))])
 names(t2)[grepl("t2",names(t2))] <- gsub("t2","",names(t2)[grepl("t2",names(t2))])
 names(t2)[names(t2) == "weigh"] <- "weight2"
 
-t2$BMI <- as.numeric(t2$BMI) 
+# Have to remove weight3 from t1, completely full of NAs after the above operations
+t1 <- t1 %>% select(-weight3)
+
+# BodyTotal was stored as a character in t2, as was BMI
+t2$BMI <- as.numeric(t2$BMI)
+t2$BodyTotal <- as.numeric(t2$BodyTotal)
 sleepfull <- bind_rows(t1, t2)
 
-sleepfull <- sleepfull %>% left_join(Empathy %>% select(C_ID,BodyTotalt0) %>% mutate(BodyTotalt0 = as.numeric(BodyTotalt0)), by = "C_ID")
+# sleepfull <- sleepfull %>% left_join(Empathy %>% select(C_ID,BodyTotalt0) %>% mutate(BodyTotalt0 = as.numeric(BodyTotalt0)), by = "C_ID")
 
 # rename age and change age and BMI to numeric
 sleepfull <- sleepfull %>% mutate(demo_child_age_check = as.numeric(demo_child_age_check)) %>% rename(age = demo_child_age_check)
@@ -152,7 +158,6 @@ table(sleepfull$demo_degree)
 table(sleepfull$T_DD_PeriodPain,sleepfull$T_DD_Period)
 table(sleepfull$T_DD_PeriodPain)
 table(sleepfull$T_DD_PeriodFlow)
-
 
 ####################################
 # EDA
@@ -307,7 +312,7 @@ summary(mod_waso_1)
 
 
 
-# JOSIE PRELIMINARY MODELS
+# JOSIE/OLIVER PRELIMINARY MODELS
 
 # no interaction terms between period and pain/flow
 # kept interaction term between age and time
@@ -323,26 +328,31 @@ summary(mod_waso_1)
 #3. Should we add pain killer to model?  
 #4. Jules: Update Period to be 1 id Pain>0 and/or Flow > 0 
 
-
-mod_sleep_time_all <- lmer(sleep_time_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+## PAIN
+mod_sleep_time_all <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_sleep_time_all)
+# weekend is being dropped?
 
-mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
-mod_sleep_time_1 <- lmer(sleep_time_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_sleep_time_0)
+# weekend, age:time, and time are being dropped
+
+mod_sleep_time_1 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_sleep_time_1)
+# same drops as mod_sleep_time_0
 
-
-# flow
-
-mod_sleep_time_all <- lmer(sleep_time_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+## FLOW
+mod_sleep_time_all <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_sleep_time_all)
+# weekend is dropped again
 
-mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
-mod_sleep_time_1 <- lmer(sleep_time_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_sleep_time_0)
-summary(mod_sleep_time_1)
+# weekend, age:time, and time are being dropped
 
+mod_sleep_time_1 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_sleep_time_1)
+# weekend, age:time, and time are being dropped
 
 
 ############################
@@ -355,83 +365,102 @@ sleepfull %>% filter(end_time_dec_T > 20)
 
 sleepfull$end_time_dec_T[!is.na(sleepfull$end_time_dec_T) & sleepfull$end_time_dec_T > 20] <- sleepfull$end_time_dec_T[!is.na(sleepfull$end_time_dec_T) & sleepfull$end_time_dec_T > 20] - 24
 
-# pain
+## PAIN
 
-mod_offset_all <- lmer(end_time_dec_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+mod_offset_all <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_offset_all)
+# weekend dropped again
 
-mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
-mod_offset_1 <- lmer(end_time_dec_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_offset_0)
+# weekend, age:time, and time dropped
+
+mod_offset_1 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_offset_1)
+# weekend, age:time, and time dropped
 
+## FLOW
 
-# flow
-
-mod_offset_all <- lmer(end_time_dec_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+mod_offset_all <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_offset_all)
+# weekend dropped again!!!
 
-mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
-mod_offset_1 <- lmer(end_time_dec_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_offset_0)
-summary(mod_offset_1)
+# weekend, age:time, and time dropped again
 
+mod_offset_1 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_offset_1)
+# weekend, age:time, and time dropped again
 
 
 ############################
 #Onset/Falling Asleep (start_time_TRM_t2)
 ############################
 
-# pain
+## PAIN
 
-mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_onset_all)
 plot(mod_onset_all)
+# weekend dropped again
 
-mod_onset_0 <- lmer(start_time_TRM_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
-mod_onset_1 <- lmer(start_time_TRM_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+mod_onset_0 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_onset_0)
+# weekend, age:time, time dropped again
+
+mod_onset_1 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_onset_1)
+# weekend, age:time, time dropped again
 
+## FLOW
 
-# flow
-
-mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_onset_all)
 plot(mod_onset_all)
+# weekend dropped
 
-mod_onset_0 <- lmer(start_time_TRM_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
-mod_onset_1 <- lmer(start_time_TRM_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+mod_onset_0 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_onset_0)
-summary(mod_onset_1)
+# weekend, age:time, time dropped again
 
+mod_onset_1 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_onset_1)
+# weekend, age:time, time dropped again
 
 ############################
 #Efficiency (efficiency_t2)
 ############################
 
-# pain
+## PAIN
 
-mod_eff_all <- lmer(efficiency_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+mod_eff_all <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_eff_all)
 plot(mod_eff_all)
+# weekend dropped
 
-mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
-mod_eff_1 <- lmer(efficiency_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_eff_0)
+# weekend, age:time, time dropped again
+
+mod_eff_1 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_eff_1)
+# weekend, age:time, time dropped again
 
+## FLOW
 
-# flow
-
-mod_eff_all <- lmer(efficiency_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+mod_eff_all <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_eff_all)
 plot(mod_eff_all)
+# weekend dropped
 
-mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
-mod_eff_1 <- lmer(efficiency_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_eff_0)
+# weekend, age:time, time dropped
+
+mod_eff_1 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_eff_1)
+# weekend, age:time, time dropped
 
 ############################
 #Awakenings (waso_t2)
@@ -439,24 +468,32 @@ summary(mod_eff_1)
 
 hist(sleepfull$waso_T) # might need log
 
-# pain
+## PAIN
 
-mod_waso_all <- lmer(waso_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+mod_waso_all <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_waso_all)
 plot(mod_waso_all)
+# weekend dropped
 
-mod_waso_0 <- lmer(waso_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
-mod_waso_1 <- lmer(waso_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+mod_waso_0 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_waso_0)
+# weekend, age:time, time dropped
+
+mod_waso_1 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_waso_1)
+# weekend, age:time, time dropped
 
-# flow
+## FLOW
 
-mod_waso_all <- lmer(waso_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+mod_waso_all <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_waso_all)
 plot(mod_waso_all)
+# weekend dropped
 
-mod_waso_0 <- lmer(waso_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
-mod_waso_1 <- lmer(waso_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+mod_waso_0 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_waso_0)
+# weekend, age:time, time dropped
+
+mod_waso_1 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_waso_1)
+# weekend, age:time, time dropped
