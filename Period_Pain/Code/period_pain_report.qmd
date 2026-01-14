@@ -5,6 +5,8 @@ format: html
 editor: visual
 ---
 
+# Period Pain and Sleep Report
+
 ```{r}
 library(tidyverse)
 
@@ -17,13 +19,11 @@ actigraphy_t2 <- readxl::read_xlsx("./Period_Pain/Data/Esleep_T2_Sleep Data_Dail
 diary_t1 <- readxl::read_xlsx("./Period_Pain/Data/E-Sleep_DailyDiary_FINAL_T1Data_updated1.10.26.xlsx")
 
 diary_t2 <- readxl::read_xlsx("./Period_Pain/Data/E-Sleep_DailyDiary_FINAL_T2Data_updated1.10.26.xlsx")
+```
 
-##########
-# CLEANING
-##########
+### Data Cleaning
 
-## Going to have to rename subject_id 
-
+```{r}
 actigraphy_t1_dec <- actigraphy_t1 %>% 
   select(-start_time_t1, -end_time_t1) %>% 
   mutate(subject_id_t1 = as.double(subject_id_t1))
@@ -172,11 +172,12 @@ table(sleepfull$demo_degree)
 table(sleepfull$T_DD_PeriodPain,sleepfull$T_DD_Period)
 table(sleepfull$T_DD_PeriodPain)
 table(sleepfull$T_DD_PeriodFlow)
+```
 
-####################################
-# EDA
-####################################
 
+## EDA
+
+```{r}
 #How many unique people are there at each time point. 
 #How many days is someone on their period. 
 #How many are ever on their periods
@@ -224,7 +225,11 @@ ggplot(aes(x = T_DD_PeriodFlow, y = log(waso_T+ 1), color = as.factor(T_DD_Perio
 
 ggplot(aes(x = T_DD_PeriodPain, y = log(waso_T + 1), color = as.factor(Time)), data = sleepfull) + geom_point() + geom_smooth()
 ggplot(aes(x = T_DD_PeriodFlow, y = log(waso_T + 1), color = as.factor(Time)), data = sleepfull) + geom_point() + geom_smooth()
+```
 
+## Greg Models
+
+```{r}
 ####Modeling
 # Age (demo_child_age_check_t1)
 # Parental Education (demo_degreet1)
@@ -314,22 +319,13 @@ mod_waso_1 <- lmer(waso_T ~ 1 + BodyTotalt0 + weekend + T_DD_Period + BMI + demo
 summary(mod_waso_0)
 summary(mod_waso_1)
 
-
-
-
-# 
-# Timing 
-# Offset/Waketime (end_time_dec_t2)
-# Onset/Falling Asleep (start_time_TRM_t2)
-# Quality 
-# Efficiency (efficiency_t2)
-# Awakenings (waso_t2)
-
+```
 
 
 
 # JOSIE/OLIVER PRELIMINARY MODELS
 
+```{r}
 # no interaction terms between period and pain/flow
 # kept interaction term between age and time
 
@@ -339,10 +335,10 @@ summary(mod_waso_1)
 
 # pain
 #To do:
-#1. Drop demo_degree 
-#2. Replace Body Total t0 with Body Total t1 and t2.  
+#1. Drop demo_degree (DONE)
+#2. Replace Body Total t0 with Body Total t1 and t2. (DONE)
 #3. Should we add pain killer to model?  
-#4. Jules: Update Period to be 1 id Pain>0 and/or Flow > 0 
+#4. Jules: Update Period to be 1 id Pain>0 and/or Flow > 0 (DONE)
 
 ## OLIVER NOTES:
 ## We should remove age:time and time from the models at time 0 and time 1
