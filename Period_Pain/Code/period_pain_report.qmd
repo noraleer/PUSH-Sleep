@@ -405,4 +405,32 @@ mod_waso_1 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-
 summary(mod_waso_1)
 
 pairs(sleepfull %>% select(BodyTotal, weekend, T_DD_Period, BMI, age, T_DD_PeriodFlow))
+
+
+############################
+# Sleep Quality
+############################
+
+## PAIN
+
+mod_qual_all <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+summary(mod_qual_all)
+
+mod_qual_0 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+summary(mod_qual_0)
+
+mod_qual_1 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_qual_1)
+
+
+## FLOW
+
+mod_qual_all <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+summary(mod_qual_all)
+
+mod_qual_0 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+summary(mod_qual_0)
+
+mod_qual_1 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_qual_1)
 ```
