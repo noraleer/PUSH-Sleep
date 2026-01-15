@@ -409,7 +409,7 @@ summary(mod_waso_all)
 mod_waso_0 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_waso_0)
 # t2
-mod_waso_1 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+mod_waso_1 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_waso_1)
 
 ## FLOW
@@ -422,3 +422,20 @@ summary(mod_waso_0)
 # t2
 mod_waso_1 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_waso_1)
+
+## 1/15 Notes
+# 1) Add six models for each response variable, three with period pain + period flow first order and three with pain:flow
+# 2) Check VIFs for each model
+# 3) Look at residuals for each model
+# 4) Correlation matrix for the predictors (cor())
+# For each response variable, take each model and take what is interesting about them. Look at residuals,
+# make sure things fit and make sense. Use lmertest package to perform CIs (profile). We are interested
+# in the variables period flow and period pain.
+
+# At time 2, Period Pain estimate is -34. Weekend is positive, Period is positive, but Pain is negative.
+# This means that when you're on your period, you get more sleep, but when you have more pain, you get 
+# less sleep.
+
+# on Period -> Earlier Sleep onset time
+# Higher pain, later sleep onset time -> Class significance
+# If you're on your period, you go to sleep earlier, but when you have more pain, you go to sleep later
