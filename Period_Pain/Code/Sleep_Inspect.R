@@ -424,12 +424,16 @@ mod_waso_1 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI
 summary(mod_waso_1)
 
 ## 1/15 Notes
-# 1) Add six models for each response variable, three with period pain + period flow first order and three with pain:flow
+# 1) Add six models for each response variable, three with period pain + period flow first order and three with pain:flow.
+# ^ Before this look at correlation between flow and pain
 # 2) Check VIFs for each model
-# 3) Look at residuals for each model
+# 3) Look at residuals for each model (Validate assumptions of our models)
 # 4) Correlation matrix for the predictors (cor())
+# 5) Make an interaction plot for age and time
+# 6) Partial F-Test for All-models 
+# 7) Model assumptions of WASO are of concern. if it's weird, think of better transformations.
 # For each response variable, take each model and take what is interesting about them. Look at residuals,
-# make sure things fit and make sense. Use lmertest package to perform CIs (profile). We are interested
+# make sure things fit and make sense. Use lmertest package to get p-values, and perform CIs (profile). We are interested
 # in the variables period flow and period pain.
 
 # At time 2, Period Pain estimate is -34. Weekend is positive, Period is positive, but Pain is negative.
