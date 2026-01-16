@@ -17,12 +17,11 @@ We have longitudinal data for two different time points for a number of individu
 
 To get the final dataset, we combined 3 datasets:
 
-- Empathy - personal and environmental variables
+-   Empathy - personal and environmental variables
 
-- Actigraphy 1 and 2 - sleep variables
+-   Actigraphy 1 and 2 - sleep variables
 
-- Daily Diary 1 and 2 - period variables (whether they are on their period)
-
+-   Daily Diary 1 and 2 - period variables (whether they are on their period)
 
 ```{r, include=FALSE}
 library(tidyverse)
@@ -30,15 +29,15 @@ library(here)
 library(lme4)
 library(patchwork)
 
-Empathy <- read_csv(here("Period_Pain/Data", "Empathy_Data_Updated.csv"))
+Empathy <- read_csv(here("./Data", "Empathy_Data_Updated.csv"))
 
-actigraphy_t1 <- readxl::read_xlsx(here("Period_Pain/Data", "Esleep_T1_Sleep Data_DailyActi_4.22.25.xlsx"))
+actigraphy_t1 <- readxl::read_xlsx(here("./Data", "Esleep_T1_Sleep Data_DailyActi_4.22.25.xlsx"))
 
-actigraphy_t2 <- readxl::read_xlsx(here("Period_Pain/Data", "Esleep_T2_Sleep Data_DailyActi_4.22.25.xlsx"))
+actigraphy_t2 <- readxl::read_xlsx(here("./Data", "Esleep_T2_Sleep Data_DailyActi_4.22.25.xlsx"))
 
-diary_t1 <- readxl::read_xlsx(here("Period_Pain/Data", "E-Sleep_DailyDiary_FINAL_T1Data_updated1.10.26.xlsx"))
+diary_t1 <- readxl::read_xlsx(here("./Data", "E-Sleep_DailyDiary_FINAL_T1Data_updated1.10.26.xlsx"))
 
-diary_t2 <- readxl::read_xlsx(here("Period_Pain/Data", "E-Sleep_DailyDiary_FINAL_T2Data_updated1.10.26.xlsx"))
+diary_t2 <- readxl::read_xlsx(here("./Data", "E-Sleep_DailyDiary_FINAL_T2Data_updated1.10.26.xlsx"))
 ```
 
 ```{r, include = FALSE}
@@ -192,9 +191,7 @@ table(sleepfull$T_DD_PeriodPain)
 table(sleepfull$T_DD_PeriodFlow)
 ```
 
-
 # EDA
-
 
 ```{r}
 ## How many unique people are there at each time point.
@@ -294,7 +291,6 @@ ggplot(aes(x = T_DD_PeriodFlow, y = log(waso_T + 1), color = as.factor(Time)), d
   labs(title = "Period Flow vs. log-WASO", x = "Period Flow", y = "log-WASO", color = "Time")
 
 ```
-
 
 # Josie and Oliver Preliminary Models
 
