@@ -403,24 +403,24 @@ summary(mod_offset_1)
 ## PAIN & FLOW 
 # All
 mod_offset_all <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
-summary(mod_sleep_time_all)
+summary(mod_offset_all)
 #t1
 mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
-summary(mod_sleep_time_0)
+summary(mod_offset_0)
 # t2
 mod_offset_1 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
-summary(mod_sleep_time_1)
+summary(mod_offset_1)
 
 ## PAIN:FLOW
 # All
 mod_offset_all <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
-summary(mod_sleep_time_all)
+summary(mod_offset_all)
 #t1
 mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
-summary(mod_sleep_time_0)
+summary(mod_offset_0)
 # t2
 mod_offset_1 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
-summary(mod_sleep_time_1)
+summary(mod_offset_1)
 
 ############################
 #Onset/Falling Asleep (start_time_TRM_t2)
