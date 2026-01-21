@@ -2,6 +2,7 @@
 library(tidyverse)
 library(lme4)
 library(patchwork)
+library(ggtext)
 
 ###############
 # FILE READING
@@ -176,6 +177,35 @@ table(sleepfull$T_DD_PeriodFlow)
 ####################################
 # EDA
 ####################################
+
+## age distribution
+
+sleepfull %>% 
+  ggplot(aes(x = age)) + 
+  geom_histogram() + 
+  labs(title = 'Histogram of Age in Full Dataset')
+
+# average age at each time point
+sleepfull %>% 
+  ggplot(aes(x = age)) + 
+  geom_histogram() + 
+  facet_grid(~ Time) +
+  labs(title = 'Histogram of Age by Time Point')
+
+sleepfull %>% 
+  ggplot(aes(y = age)) + 
+  geom_boxplot() +
+  facet_grid(~ Time) +
+  labs(title = 'Boxplot of Age by Time Point')
+
+# difference in age between the time periods
+ggplot(sleepfull, aes(x = age, y = as.factor(C_ID))) +
+  geom_line() +
+  geom_point(aes(color = as.factor(Time)), size = 2) +
+  labs(title = 'Difference in Age between Time Points',
+       y = 'Subject ID',
+       color = 'Time')
+
 
 ## How many unique people are there at each time point.
 sleepfull %>%
