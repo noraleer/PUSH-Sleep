@@ -341,6 +341,9 @@ vif(mod_sleep_time_all)
 plot(mod_sleep_time_all)
 qqnorm(resid(mod_sleep_time_all))
 qqnorm(ranef(mod_sleep_time_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_sleep_time_all)
 
 # t1
 mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -373,6 +376,9 @@ vif(mod_sleep_time_all)
 plot(mod_sleep_time_all)
 qqnorm(resid(mod_sleep_time_all))
 qqnorm(ranef(mod_sleep_time_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_sleep_time_all)
 
 # t1
 mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -404,6 +410,10 @@ vif(mod_sleep_time_all)
 plot(mod_sleep_time_all)
 qqnorm(resid(mod_sleep_time_all))
 qqnorm(ranef(mod_sleep_time_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_sleep_time_all)
+
 
 #t1
 mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -435,6 +445,9 @@ vif(mod_sleep_time_all)
 plot(mod_sleep_time_all)
 qqnorm(resid(mod_sleep_time_all))
 qqnorm(ranef(mod_sleep_time_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_sleep_time_all)
 
 #t1
 mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -480,6 +493,9 @@ plot(mod_offset_all)
 qqnorm(resid(mod_offset_all))
 qqnorm(ranef(mod_offset_all)$C_ID[,1])
 # Violations of homogeneity and normality for the residuals. On the residual-fitted plot, there appears to be outliers on both axes.
+# partial f test
+mod_red <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_offset_all)
 
 # t1
 mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -514,6 +530,9 @@ plot(mod_offset_all)
 qqnorm(resid(mod_offset_all))
 qqnorm(ranef(mod_offset_all)$C_ID[,1])
 # Same issues as the pain all and 0 plots 
+# partial f test
+mod_red <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_offset_all)
 
 # t1
 mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -547,6 +566,9 @@ vif(mod_offset_all)
 plot(mod_offset_all)
 qqnorm(resid(mod_offset_all))
 qqnorm(ranef(mod_offset_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_offset_all)
 
 #t1
 mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -581,6 +603,9 @@ plot(mod_offset_all)
 qqnorm(resid(mod_offset_all))
 qqnorm(ranef(mod_offset_all)$C_ID[,1])
 # Continuation of strange plots across both time points. There's going to need to be more of a fix. 
+# partial f test
+mod_red <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_offset_all)
 
 #t1
 mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -621,6 +646,9 @@ plot(mod_onset_all)
 qqnorm(resid(mod_onset_all))
 qqnorm(ranef(mod_onset_all)$C_ID[,1])
 # Onset has the same problems as offset. Even with 494 and 522 removed, there's still a violation of homogeneity for the residuals.
+# partial f test
+mod_red <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(C_ID != c(494, 522)))
+anova(mod_red, mod_onset_all)
 
 # t1
 mod_onset_0 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -653,6 +681,9 @@ vif(mod_onset_all)
 plot(mod_onset_all)
 qqnorm(resid(mod_onset_all))
 qqnorm(ranef(mod_onset_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_onset_all)
 
 # t1
 mod_onset_0 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -685,6 +716,9 @@ vif(mod_onset_all)
 plot(mod_onset_all)
 qqnorm(resid(mod_onset_all))
 qqnorm(ranef(mod_onset_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_onset_all)
 
 # t1
 mod_onset_0 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -717,6 +751,9 @@ vif(mod_onset_all)
 plot(mod_onset_all)
 qqnorm(resid(mod_onset_all))
 qqnorm(ranef(mod_onset_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_onset_all)
 
 # t1
 mod_onset_0 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -756,6 +793,9 @@ plot(mod_eff_all)
 qqnorm(resid(mod_eff_all))
 qqnorm(ranef(mod_eff_all)$C_ID[,1])
 # All of these plots look decent, but there is one obvious outlier
+# partial f test
+mod_red <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_eff_all)
 
 # t1
 mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -790,6 +830,9 @@ plot(mod_eff_all)
 qqnorm(resid(mod_eff_all))
 qqnorm(ranef(mod_eff_all)$C_ID[,1])
 # Again, the outlier is the only exception
+# partial f test
+mod_red <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_eff_all)
 
 # t1
 mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -821,6 +864,9 @@ vif(mod_eff_all)
 plot(mod_eff_all)
 qqnorm(resid(mod_eff_all))
 qqnorm(ranef(mod_eff_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_eff_all)
 
 # t1
 mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -852,6 +898,9 @@ vif(mod_eff_all)
 plot(mod_eff_all)
 qqnorm(resid(mod_eff_all))
 qqnorm(ranef(mod_eff_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_eff_all)
 
 # t1
 mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -892,6 +941,9 @@ plot(mod_waso_all)
 qqnorm(resid(mod_waso_all))
 qqnorm(ranef(mod_waso_all)$C_ID[,1])
 # This model has definitely got some funk to it. While the assumption of homogeneity isn't violated, the QQ plot of the residuals shows a violation. 
+# partial f test
+mod_red <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_waso_all)
 
 # t1
 mod_waso_0 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -924,6 +976,9 @@ vif(mod_waso_all)
 plot(mod_waso_all)
 qqnorm(resid(mod_waso_all))
 qqnorm(ranef(mod_waso_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_waso_all)
 
 # t1
 mod_waso_0 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -955,6 +1010,9 @@ vif(mod_waso_all)
 plot(mod_waso_all)
 qqnorm(resid(mod_waso_all))
 qqnorm(ranef(mod_waso_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_waso_all)
 
 # t1
 mod_waso_0 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -986,6 +1044,9 @@ vif(mod_waso_all)
 plot(mod_waso_all)
 qqnorm(resid(mod_waso_all))
 qqnorm(ranef(mod_waso_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_waso_all)
 
 # t1
 mod_waso_0 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -1024,6 +1085,9 @@ vif(mod_qual_all)
 plot(mod_qual_all)
 qqnorm(resid(mod_qual_all))
 qqnorm(ranef(mod_qual_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_qual_all)
 
 # t1
 mod_qual_0 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -1052,6 +1116,9 @@ vif(mod_qual_all)
 plot(mod_qual_all)
 qqnorm(resid(mod_qual_all))
 qqnorm(ranef(mod_qual_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_qual_all)
 
 # t1
 mod_qual_0 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -1080,6 +1147,9 @@ vif(mod_qual_all)
 plot(mod_qual_all)
 qqnorm(resid(mod_qual_all))
 qqnorm(ranef(mod_qual_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_qual_all)
 
 # t1
 mod_qual_0 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -1108,6 +1178,9 @@ vif(mod_qual_all)
 plot(mod_qual_all)
 qqnorm(resid(mod_qual_all))
 qqnorm(ranef(mod_qual_all)$C_ID[,1])
+# partial f test
+mod_red <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+anova(mod_red, mod_qual_all)
 
 # t1
 mod_qual_0 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
