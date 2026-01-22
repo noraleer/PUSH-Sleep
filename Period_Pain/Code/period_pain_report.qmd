@@ -29,6 +29,7 @@ library(here)
 library(lme4)
 library(patchwork)
 library(car)
+library(lmerTest)
 
 Empathy <- read_csv(here("./Period_Pain/Data", "Empathy_Data_Updated.csv"))
 
@@ -117,8 +118,8 @@ t1[t1==-99] = NA
 t2[t2==-999] = NA
 t2[t2==-99] = NA
 
-glimpse(t1)
-glimpse(t2)
+#glimpse(t1)
+#glimpse(t2)
 
 #Update DayType to 1 is friday-saturday and 0 is any other night
 t1 <- t1 %>% mutate(weekend = ifelse((wday(T_DD_NightDate, label = TRUE)) %in% c("Fri","Sat"),1,0))
@@ -196,6 +197,11 @@ table(sleepfull$T_DD_PeriodFlow)
 
 ```{r}
 # Age distribution in the full dataset
+mean(sleepfull$age)
+sleepfull %>% group_by(Time) %>% summarize(mean_age = mean(age))
+  
+# Average age overall is 13.55. At time 1, the average age is 13.3 and at time 2 it is 14.
+
 sleepfull %>% 
   ggplot(aes(x = age)) + 
   geom_histogram() + 
@@ -221,6 +227,8 @@ ggplot(sleepfull, aes(x = age, y = as.factor(C_ID))) +
   labs(title = 'Difference in Age between Time Points',
        y = 'Subject ID',
        color = 'Time')
+
+
 ## How many unique people are there at each time point.
 sleepfull %>%
   group_by(Time) %>% 
@@ -275,7 +283,7 @@ sleepfull %>% group_by(painkiller) %>%
             avg_time = mean(sleep_time_T, na.rm = T))
 
 #How much is missing?
-apply(sleepfull, 2, function(x){sum(is.na(x))})
+# apply(sleepfull, 2, function(x){sum(is.na(x))})
 # 603 of the observations are missing values for T_DD_PeriodDay, which could be problematic if 
 # we're ever interested in looking at when pain or flow is at it's highest?
 
@@ -320,13 +328,14 @@ ggplot(aes(x = T_DD_PeriodFlow, y = log(waso_T + 1), color = as.factor(Time)), d
 
 # Models & Tests
 
-## Sleep Duration (sleep_time_1)
+## Sleep Duration (sleep_time_T)
 
 ```{r}
 ## PAIN
 # All
 mod_sleep_time_all <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_sleep_time_all)
+confint(mod_sleep_time_all)
 vif(mod_sleep_time_all)
 # No evidence of multicollinearity in this model
 plot(mod_sleep_time_all)
@@ -336,6 +345,7 @@ qqnorm(ranef(mod_sleep_time_all)$C_ID[,1])
 # t1
 mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_sleep_time_0)
+confint(mod_sleep_time_0)
 vif(mod_sleep_time_0)
 # No evidence of multicollinearity
 plot(mod_sleep_time_0)
@@ -346,6 +356,7 @@ qqnorm(ranef(mod_sleep_time_0)$C_ID[,1])
 hist(sleepfull$sleep_time_T)
 mod_sleep_time_1 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_sleep_time_1)
+confint(mod_sleep_time_1)
 vif(mod_sleep_time_1)
 # No evidence of multicollinearity
 plot(mod_sleep_time_1)
@@ -356,6 +367,7 @@ qqnorm(ranef(mod_sleep_time_1)$C_ID[,1])
 # All
 mod_sleep_time_all <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_sleep_time_all)
+confint(mod_sleep_time_all)
 vif(mod_sleep_time_all)
 # No evidence of multicollinearity
 plot(mod_sleep_time_all)
@@ -365,6 +377,7 @@ qqnorm(ranef(mod_sleep_time_all)$C_ID[,1])
 # t1
 mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_sleep_time_0)
+confint(mod_sleep_time_0)
 vif(mod_sleep_time_0)
 # No evidence of multicollinearity
 plot(mod_sleep_time_0)
@@ -374,6 +387,7 @@ qqnorm(ranef(mod_sleep_time_0)$C_ID[,1])
 # t2
 mod_sleep_time_1 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_sleep_time_1)
+confint(mod_sleep_time_1)
 vif(mod_sleep_time_1)
 # No evidence of multicollinearity
 plot(mod_sleep_time_1)
@@ -384,6 +398,7 @@ qqnorm(ranef(mod_sleep_time_1)$C_ID[,1])
 # All
 mod_sleep_time_all <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_sleep_time_all)
+confint(mod_sleep_time_all)
 vif(mod_sleep_time_all)
 # No evidence of multicollinearity
 plot(mod_sleep_time_all)
@@ -393,6 +408,7 @@ qqnorm(ranef(mod_sleep_time_all)$C_ID[,1])
 #t1
 mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_sleep_time_0)
+confint(mod_sleep_time_0)
 vif(mod_sleep_time_0)
 # No evidence of multicollinearity
 plot(mod_sleep_time_0)
@@ -402,6 +418,7 @@ qqnorm(ranef(mod_sleep_time_0)$C_ID[,1])
 # t2
 mod_sleep_time_1 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_sleep_time_1)
+confint(mod_sleep_time_1)
 vif(mod_sleep_time_1)
 # No evidence of multicollinearity
 plot(mod_sleep_time_1)
@@ -412,6 +429,7 @@ qqnorm(ranef(mod_sleep_time_1)$C_ID[,1])
 # All
 mod_sleep_time_all <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_sleep_time_all)
+confint(mod_sleep_time_all)
 vif(mod_sleep_time_all)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow, PeriodPain, Period, and PeriodFlow
 plot(mod_sleep_time_all)
@@ -421,6 +439,7 @@ qqnorm(ranef(mod_sleep_time_all)$C_ID[,1])
 #t1
 mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_sleep_time_0)
+confint(mod_sleep_time_0)
 vif(mod_sleep_time_0)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow, PeriodPain, PeriodFlow, and Period
 plot(mod_sleep_time_0)
@@ -430,6 +449,7 @@ qqnorm(ranef(mod_sleep_time_0)$C_ID[,1])
 # t2
 mod_sleep_time_1 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_sleep_time_1)
+confint(mod_sleep_time_1)
 vif(mod_sleep_time_1)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow and PeriodPain, moderate evidence of multicollinearity for PeriodFlow and Period
 plot(mod_sleep_time_1)
@@ -439,7 +459,7 @@ qqnorm(ranef(mod_sleep_time_1)$C_ID[,1])
 
 The mixed effects models predicting sleep time do not display any troubling evidence of multicollinearity, except for in the models that have interaction terms between PeriodPain and PeriodFlow. High VIF in models with interaction terms is not of concern, though. For all of the above models, there were no marked violations of the assumptions of homogeneity and normality of the residuals, and the random effects appear to be normally distributed as well. There is a right-facing horn shape in the residual plots for timepoint 2, and an outlier in the timepoint 1 data, but nothing that sticks out to the point of concern.
 
-## Offset/Waketime (end_time_dec_t2)
+## Offset/Waketime (end_time_dec_T)
 
 ```{r}
 #C_ID 494 is waking up at like 10pm?
@@ -453,6 +473,7 @@ hist(sleepfull$end_time_dec_T)
 # All
 mod_offset_all <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_offset_all)
+confint(mod_offset_all)
 vif(mod_offset_all)
 # No evidence of multicollinearity
 plot(mod_offset_all)
@@ -463,6 +484,7 @@ qqnorm(ranef(mod_offset_all)$C_ID[,1])
 # t1
 mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_offset_0)
+confint(mod_offset_0)
 vif(mod_offset_0)
 # No evidence of multicollinearity
 plot(mod_offset_0)
@@ -473,6 +495,7 @@ qqnorm(ranef(mod_offset_0)$C_ID[,1])
 # t2
 mod_offset_1 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_offset_1)
+confint(mod_offset_1)
 vif(mod_offset_1)
 # No evidence of multicollinearity
 plot(mod_offset_1)
@@ -484,6 +507,7 @@ qqnorm(ranef(mod_offset_1)$C_ID[,1])
 # All
 mod_offset_all <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_offset_all)
+confint(mod_offset_all)
 vif(mod_offset_all)
 # No evidence of multicollinearity
 plot(mod_offset_all)
@@ -494,6 +518,7 @@ qqnorm(ranef(mod_offset_all)$C_ID[,1])
 # t1
 mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_offset_0)
+confint(mod_offset_0)
 vif(mod_offset_0)
 # No evidence of multicollinearity
 plot(mod_offset_0)
@@ -504,6 +529,7 @@ qqnorm(ranef(mod_offset_0)$C_ID[,1])
 # t2
 mod_offset_1 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_offset_1)
+confint(mod_offset_1)
 vif(mod_offset_1)
 # No evidence of multicollinearity
 plot(mod_offset_1)
@@ -515,6 +541,7 @@ qqnorm(ranef(mod_offset_1)$C_ID[,1])
 # All
 mod_offset_all <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_offset_all)
+confint(mod_offset_all)
 vif(mod_offset_all)
 # No evidence of multicollinearity
 plot(mod_offset_all)
@@ -524,6 +551,7 @@ qqnorm(ranef(mod_offset_all)$C_ID[,1])
 #t1
 mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_offset_0)
+confint(mod_offset_0)
 vif(mod_offset_0)
 # Moderate evidence of multicollinearity for PeriodFlow
 plot(mod_offset_0)
@@ -534,6 +562,7 @@ qqnorm(ranef(mod_offset_0)$C_ID[,1])
 # t2
 mod_offset_1 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_offset_1)
+confint(mod_offset_1)
 vif(mod_offset_1)
 # No evidence of multicollinearity
 plot(mod_offset_1)
@@ -545,6 +574,7 @@ qqnorm(ranef(mod_offset_1)$C_ID[,1])
 # All
 mod_offset_all <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_offset_all)
+confint(mod_offset_all)
 vif(mod_offset_all)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow, PeriodPain, PeriodFlow, and Period
 plot(mod_offset_all)
@@ -555,6 +585,7 @@ qqnorm(ranef(mod_offset_all)$C_ID[,1])
 #t1
 mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_offset_0)
+confint(mod_offset_0)
 vif(mod_offset_0)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow, PeriodPain, PeriodFlow, Period
 plot(mod_offset_0)
@@ -565,6 +596,7 @@ qqnorm(ranef(mod_offset_0)$C_ID[,1])
 # t2
 mod_offset_1 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_offset_1)
+confint(mod_offset_1)
 vif(mod_offset_1)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow and PeriodPain, and moderate evidence of multicollinearity for PeriodFlow and Period
 plot(mod_offset_1)
@@ -575,13 +607,14 @@ qqnorm(ranef(mod_offset_1)$C_ID[,1])
 
 The mixed models predicting sleep offset time showed no significant evidence of multicollinearity, but the assumptions of homogeneity and normality for the residuals and normality for the random effects were violated for the "All" and "t1" models. These violations are likely due to the consistently abnormal offset times observed in participants 494 and 522, both of whom were "t1" participants. All of 494's offset times were observed between 9:53pm and 11:28pm, which is reflected in the raw data. On her fourth day, she made a note saying that the time on her actigraphy watch was incorrect. All of participant 522's offset times were observed between 11:13pm and 3:09am, but she never made a note about the time on her watch. None of the "t2" models violated the assumptions.
 
-## Onset/Falling Asleep (start_time_TRM_t2)
+## Onset/Falling Asleep (start_time_TRM_T)
 
 ```{r}
 ## PAIN
 # All
 mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(C_ID != c(494, 522)))
 summary(mod_onset_all)
+confint(mod_onset_all)
 vif(mod_onset_all)
 # No evidence of multicollinearity
 plot(mod_onset_all)
@@ -592,6 +625,7 @@ qqnorm(ranef(mod_onset_all)$C_ID[,1])
 # t1
 mod_onset_0 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_onset_0)
+confint(mod_onset_0)
 vif(mod_onset_0)
 # No evidence of multicollinearity
 plot(mod_onset_0)
@@ -601,6 +635,7 @@ qqnorm(ranef(mod_onset_0)$C_ID[,1])
 # t2
 mod_onset_1 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_onset_1)
+confint(mod_onset_1)
 vif(mod_onset_1)
 # No evidence of multicollinearity
 plot(mod_onset_1)
@@ -612,6 +647,7 @@ qqnorm(ranef(mod_onset_1)$C_ID[,1])
 # All
 mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_onset_all)
+confint(mod_onset_all)
 vif(mod_onset_all)
 # No evidence of multicollinearity
 plot(mod_onset_all)
@@ -621,6 +657,7 @@ qqnorm(ranef(mod_onset_all)$C_ID[,1])
 # t1
 mod_onset_0 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_onset_0)
+confint(mod_onset_0)
 vif(mod_onset_0)
 # No evidence of multicollinearity
 plot(mod_onset_0)
@@ -630,6 +667,7 @@ qqnorm(ranef(mod_onset_0)$C_ID[,1])
 # t2
 mod_onset_1 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_onset_1)
+confint(mod_onset_1)
 vif(mod_onset_1)
 # No evidence of multicollinearity
 plot(mod_onset_1)
@@ -641,6 +679,7 @@ qqnorm(ranef(mod_onset_1)$C_ID[,1])
 # All
 mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_onset_all)
+confint(mod_onset_all)
 vif(mod_onset_all)
 # No evidence of multicollinearity
 plot(mod_onset_all)
@@ -650,6 +689,7 @@ qqnorm(ranef(mod_onset_all)$C_ID[,1])
 # t1
 mod_onset_0 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_onset_0)
+confint(mod_onset_0)
 vif(mod_onset_0)
 # Moderate evidence of multicollinearity for PeriodFlow
 plot(mod_onset_0)
@@ -659,6 +699,7 @@ qqnorm(ranef(mod_onset_0)$C_ID[,1])
 # t2
 mod_onset_1 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_onset_1)
+confint(mod_onset_1)
 vif(mod_onset_1)
 # No evidence of multicollinearity
 plot(mod_onset_1)
@@ -670,6 +711,7 @@ qqnorm(ranef(mod_onset_1)$C_ID[,1])
 # All
 mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_onset_all)
+confint(mod_onset_all)
 vif(mod_onset_all)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow, PeriodPain, PeriodFlow, Period
 plot(mod_onset_all)
@@ -679,6 +721,7 @@ qqnorm(ranef(mod_onset_all)$C_ID[,1])
 # t1
 mod_onset_0 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_onset_0)
+confint(mod_onset_0)
 vif(mod_onset_0)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow, PeriodPain, PeriodFlow, Period
 plot(mod_onset_0)
@@ -688,6 +731,7 @@ qqnorm(ranef(mod_onset_0)$C_ID[,1])
 # t2
 mod_onset_1 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_onset_1)
+confint(mod_onset_1)
 vif(mod_onset_1)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow and PeriodPain, and moderate evidence of multicollinearity for PeriodFlow and Period
 plot(mod_onset_1)
@@ -698,13 +742,14 @@ qqnorm(ranef(mod_onset_1)$C_ID[,1])
 
 Similarly to the mixed effects models for sleep offset time, there is no evidence of multicollinearity across the board, but the assumptions are violated for each of the "All" and "t1" models. The assumptions were not violated for the "t2" models. I checked each of the models assumptions without the participants that were identified as outliers in the offset plots, but homogeneity was still violated for the "All" and "t1" models. There are also two outliers in "t2" that should be investigated.
 
-## Efficiency (efficiency_t2)
+## Efficiency (efficiency_T)
 
 ```{r}
 ## PAIN
 # All
 mod_eff_all <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_eff_all)
+confint(mod_eff_all)
 vif(mod_eff_all)
 # No evidence of multicollinearity
 plot(mod_eff_all)
@@ -715,6 +760,7 @@ qqnorm(ranef(mod_eff_all)$C_ID[,1])
 # t1
 mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_eff_0)
+confint(mod_eff_0)
 vif(mod_eff_0)
 # No evidence of multicollinearity
 plot(mod_eff_0)
@@ -725,6 +771,7 @@ qqnorm(ranef(mod_eff_0)$C_ID[,1])
 # t2
 mod_eff_1 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_eff_1)
+confint(mod_eff_1)
 vif(mod_eff_1)
 # No evidence of multicollinearity
 plot(mod_eff_1)
@@ -736,6 +783,7 @@ qqnorm(ranef(mod_eff_1)$C_ID[,1])
 # All
 mod_eff_all <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_eff_all)
+confint(mod_eff_all)
 vif(mod_eff_all)
 # No evidence of multicollinearity
 plot(mod_eff_all)
@@ -746,6 +794,7 @@ qqnorm(ranef(mod_eff_all)$C_ID[,1])
 # t1
 mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_eff_0)
+confint(mod_eff_0)
 vif(mod_eff_0)
 # No evidence of multicollinearity
 plot(mod_eff_0)
@@ -755,6 +804,7 @@ qqnorm(ranef(mod_eff_0)$C_ID[,1])
 # t2
 mod_eff_1 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_eff_1)
+confint(mod_eff_1)
 vif(mod_eff_1)
 # No evidence of multicollinearity
 plot(mod_eff_1)
@@ -765,6 +815,7 @@ qqnorm(ranef(mod_eff_1)$C_ID[,1])
 # All
 mod_eff_all <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_eff_all)
+confint(mod_eff_all)
 vif(mod_eff_all)
 # No evidence of multicollinearity
 plot(mod_eff_all)
@@ -774,6 +825,7 @@ qqnorm(ranef(mod_eff_all)$C_ID[,1])
 # t1
 mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_eff_0)
+confint(mod_eff_0)
 vif(mod_eff_0)
 # Moderate evidence of multicollinearity for PeriodFlow
 plot(mod_eff_0)
@@ -783,6 +835,7 @@ qqnorm(ranef(mod_eff_0)$C_ID[,1])
 # t2
 mod_eff_1 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_eff_1)
+confint(mod_eff_1)
 vif(mod_eff_1)
 # No evidence of multicollinearity
 plot(mod_eff_1)
@@ -793,6 +846,7 @@ qqnorm(ranef(mod_eff_1)$C_ID[,1])
 # All
 mod_eff_all <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_eff_all)
+confint(mod_eff_all)
 vif(mod_eff_all)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow, PeriodPain, PeriodFlow, and Period
 plot(mod_eff_all)
@@ -802,6 +856,7 @@ qqnorm(ranef(mod_eff_all)$C_ID[,1])
 # t1
 mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_eff_0)
+confint(mod_eff_0)
 vif(mod_eff_0)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow, PeriodPain, PeriodFlow, and Period
 plot(mod_eff_0)
@@ -811,6 +866,7 @@ qqnorm(ranef(mod_eff_0)$C_ID[,1])
 # t2
 mod_eff_1 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_eff_1)
+confint(mod_eff_1)
 vif(mod_eff_1)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow and PeriodPain, moderate evidence of multicollinearity for PeriodFlow and Period
 plot(mod_eff_1)
@@ -829,6 +885,7 @@ hist(sleepfull$waso_T) # might need log due to right-skew
 # All
 mod_waso_all <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_waso_all)
+confint(mod_waso_all)
 vif(mod_waso_all)
 # No evidence of multicollinearity
 plot(mod_waso_all)
@@ -839,6 +896,7 @@ qqnorm(ranef(mod_waso_all)$C_ID[,1])
 # t1
 mod_waso_0 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_waso_0)
+confint(mod_waso_0)
 vif(mod_waso_0)
 # No evidence of multicollinearity
 plot(mod_waso_0)
@@ -849,6 +907,7 @@ qqnorm(ranef(mod_waso_0)$C_ID[,1])
 # t2
 mod_waso_1 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_waso_1)
+confint(mod_waso_1)
 vif(mod_waso_1)
 # No evidence of multicollinearity
 plot(mod_waso_1)
@@ -859,6 +918,7 @@ qqnorm(ranef(mod_waso_1)$C_ID[,1])
 # All
 mod_waso_all <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_waso_all)
+confint(mod_waso_all)
 vif(mod_waso_all)
 # No evidence of multicollinearity
 plot(mod_waso_all)
@@ -868,6 +928,7 @@ qqnorm(ranef(mod_waso_all)$C_ID[,1])
 # t1
 mod_waso_0 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_waso_0)
+confint(mod_waso_0)
 vif(mod_waso_0)
 # No evidence of multicollinearity
 plot(mod_waso_0)
@@ -877,6 +938,7 @@ qqnorm(ranef(mod_waso_0)$C_ID[,1])
 # t2
 mod_waso_1 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_waso_1)
+confint(mod_waso_1)
 vif(mod_waso_1)
 # No evidence of multicollinearity
 plot(mod_waso_1)
@@ -887,6 +949,7 @@ qqnorm(ranef(mod_waso_1)$C_ID[,1])
 # All
 mod_waso_all <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_waso_all)
+confint(mod_waso_all)
 vif(mod_waso_all)
 # No evidence of multicollinearity
 plot(mod_waso_all)
@@ -896,6 +959,7 @@ qqnorm(ranef(mod_waso_all)$C_ID[,1])
 # t1
 mod_waso_0 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_waso_0)
+confint(mod_waso_0)
 vif(mod_waso_0)
 # Moderate evidence of multicollinearity for PeriodFlow
 plot(mod_waso_0)
@@ -905,6 +969,7 @@ qqnorm(ranef(mod_waso_0)$C_ID[,1])
 # t2
 mod_waso_1 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_waso_1)
+confint(mod_waso_1)
 vif(mod_waso_1)
 # No evidence of multicollinearity
 plot(mod_waso_1)
@@ -915,6 +980,7 @@ qqnorm(ranef(mod_waso_1)$C_ID[,1])
 # All
 mod_waso_all <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_waso_all)
+confint(mod_waso_all)
 vif(mod_waso_all)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow, PeriodPain, PeriodFlow, and Period
 plot(mod_waso_all)
@@ -924,6 +990,7 @@ qqnorm(ranef(mod_waso_all)$C_ID[,1])
 # t1
 mod_waso_0 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_waso_0)
+confint(mod_waso_0)
 vif(mod_waso_0)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow, PeriodPain, PeriodFlow, and Period
 plot(mod_waso_0)
@@ -933,6 +1000,7 @@ qqnorm(ranef(mod_waso_0)$C_ID[,1])
 # t2
 mod_waso_1 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_waso_1)
+confint(mod_waso_1)
 vif(mod_waso_1)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow, PeriodPain, moderate evidence of multicollinearity for PeriodFlow and Period
 plot(mod_waso_1)
@@ -941,6 +1009,125 @@ qqnorm(ranef(mod_waso_1)$C_ID[,1])
 ```
 
 For the mixed models predicting WASO, there was no significant evidence of multicollinearity. However, the assumption of normally distributed residuals is violated for the "All" and "t1" models, while the assumptions of homogeneity are not overtly violated but certainly questionable for every WASO model, particularly the "t2" models. This implies that we might want to consider a different transformation for WASO, if any at all.
+
+## Sleep Quality (T_DD_SleepQual)
+
+```{r}
+hist(sleepfull$T_DD_SleepQual)
+
+## PAIN
+# All
+mod_qual_all <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+summary(mod_qual_all)
+confint(mod_qual_all)
+vif(mod_qual_all)
+plot(mod_qual_all)
+qqnorm(resid(mod_qual_all))
+qqnorm(ranef(mod_qual_all)$C_ID[,1])
+
+# t1
+mod_qual_0 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+summary(mod_qual_0)
+confint(mod_qual_0)
+vif(mod_qual_0)
+plot(mod_qual_0)
+qqnorm(resid(mod_qual_0))
+qqnorm(ranef(mod_qual_0)$C_ID[,1])
+
+# t2
+mod_qual_1 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_qual_1)
+confint(mod_qual_1)
+vif(mod_qual_1)
+plot(mod_qual_1)
+qqnorm(resid(mod_qual_1))
+qqnorm(ranef(mod_qual_1)$C_ID[,1])
+
+## FLOW
+# All
+mod_qual_all <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+summary(mod_qual_all)
+confint(mod_qual_all)
+vif(mod_qual_all)
+plot(mod_qual_all)
+qqnorm(resid(mod_qual_all))
+qqnorm(ranef(mod_qual_all)$C_ID[,1])
+
+# t1
+mod_qual_0 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+summary(mod_qual_0)
+confint(mod_qual_0)
+vif(mod_qual_0)
+plot(mod_qual_0)
+qqnorm(resid(mod_qual_0))
+qqnorm(ranef(mod_qual_0)$C_ID[,1])
+
+# t2
+mod_qual_1 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_qual_1)
+confint(mod_qual_1)
+vif(mod_qual_1)
+plot(mod_qual_1)
+qqnorm(resid(mod_qual_1))
+qqnorm(ranef(mod_qual_1)$C_ID[,1])
+
+## PAIN & FLOW
+# All
+mod_qual_all <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+summary(mod_qual_all)
+confint(mod_qual_all)
+vif(mod_qual_all)
+plot(mod_qual_all)
+qqnorm(resid(mod_qual_all))
+qqnorm(ranef(mod_qual_all)$C_ID[,1])
+
+# t1
+mod_qual_0 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+summary(mod_qual_0)
+confint(mod_qual_0)
+vif(mod_qual_0)
+plot(mod_qual_0)
+qqnorm(resid(mod_qual_0))
+qqnorm(ranef(mod_qual_0)$C_ID[,1])
+
+# t2
+mod_qual_1 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_qual_1)
+confint(mod_qual_1)
+vif(mod_qual_1)
+plot(mod_qual_1)
+qqnorm(resid(mod_qual_1))
+qqnorm(ranef(mod_qual_1)$C_ID[,1])
+
+## PAIN:FLOW
+# All
+mod_qual_all <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+summary(mod_qual_all)
+confint(mod_qual_all)
+vif(mod_qual_all)
+plot(mod_qual_all)
+qqnorm(resid(mod_qual_all))
+qqnorm(ranef(mod_qual_all)$C_ID[,1])
+
+# t1
+mod_qual_0 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+summary(mod_qual_0)
+confint(mod_qual_0)
+vif(mod_qual_0)
+plot(mod_qual_0)
+qqnorm(resid(mod_qual_0))
+qqnorm(ranef(mod_qual_0)$C_ID[,1])
+
+# t2
+mod_qual_1 <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+summary(mod_qual_1)
+confint(mod_qual_1)
+vif(mod_qual_1)
+plot(mod_qual_1)
+qqnorm(resid(mod_qual_1))
+qqnorm(ranef(mod_qual_1)$C_ID[,1])
+```
+
 
 # Correlation Matrix
 
