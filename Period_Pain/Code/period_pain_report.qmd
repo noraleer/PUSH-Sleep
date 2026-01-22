@@ -437,6 +437,8 @@ qqnorm(resid(mod_sleep_time_1))
 qqnorm(ranef(mod_sleep_time_1)$C_ID[,1])
 ```
 
+The mixed effects models predicting sleep time do not display any troubling evidence of multicollinearity, except for in the models that have interaction terms between PeriodPain and PeriodFlow. High VIF in models with interaction terms is not of concern, though. For all of the above models, there were no marked violations of the assumptions of homogeneity and normality of the residuals, and the random effects appear to be normally distributed as well. There is a right-facing horn shape in the residual plots for timepoint 2, and an outlier in the timepoint 1 data, but nothing that sticks out to the point of concern.
+
 ## Offset/Waketime (end_time_dec_t2)
 
 ```{r}
@@ -449,7 +451,7 @@ sleepfull$end_time_dec_T[!is.na(sleepfull$end_time_dec_T) & sleepfull$end_time_d
 ## PAIN
 hist(sleepfull$end_time_dec_T)
 # All
-mod_offset_all <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(end_time_dec_T > 3))
+mod_offset_all <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_offset_all)
 vif(mod_offset_all)
 # No evidence of multicollinearity
@@ -518,7 +520,6 @@ vif(mod_offset_all)
 plot(mod_offset_all)
 qqnorm(resid(mod_offset_all))
 qqnorm(ranef(mod_offset_all)$C_ID[,1])
-# Fixing end_time_dec_T definitely helped, but there's still a patternized gap between clusters of points. Outliers have decreased, though. On the residual plot, there is a right-facing horn.
 
 #t1
 mod_offset_0 <- lmer(end_time_dec_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -572,19 +573,21 @@ qqnorm(ranef(mod_offset_1)$C_ID[,1])
 # Time 2 is good.
 ```
 
+The mixed models predicting sleep offset time showed no significant evidence of multicollinearity, but the assumptions of homogeneity and normality for the residuals and normality for the random effects were violated for the "All" and "t1" models. These violations are likely due to the consistently abnormal offset times observed in participants 494 and 522, both of whom were "t1" participants. All of 494's offset times were observed between 9:53pm and 11:28pm, which is reflected in the raw data. On her fourth day, she made a note saying that the time on her actigraphy watch was incorrect. All of participant 522's offset times were observed between 11:13pm and 3:09am, but she never made a note about the time on her watch. None of the "t2" models violated the assumptions.
+
 ## Onset/Falling Asleep (start_time_TRM_t2)
 
 ```{r}
 ## PAIN
 # All
-mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(C_ID != c(494, 522)))
 summary(mod_onset_all)
 vif(mod_onset_all)
 # No evidence of multicollinearity
 plot(mod_onset_all)
 qqnorm(resid(mod_onset_all))
 qqnorm(ranef(mod_onset_all)$C_ID[,1])
-# Onset has the same problems as offset
+# Onset has the same problems as offset. Even with 494 and 522 removed, there's still a violation of homogeneity for the residuals.
 
 # t1
 mod_onset_0 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
@@ -594,7 +597,6 @@ vif(mod_onset_0)
 plot(mod_onset_0)
 qqnorm(resid(mod_onset_0))
 qqnorm(ranef(mod_onset_0)$C_ID[,1])
-# ^
 
 # t2
 mod_onset_1 <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
@@ -604,7 +606,7 @@ vif(mod_onset_1)
 plot(mod_onset_1)
 qqnorm(resid(mod_onset_1))
 qqnorm(ranef(mod_onset_1)$C_ID[,1])
-# There are negative outliers on the residual plot, which are also visible in the Q-Q plots
+# Time 2 is fine for the most part, but there are some outliers far below the x-axis
 
 ## FLOW
 # All
@@ -693,6 +695,8 @@ qqnorm(resid(mod_onset_1))
 qqnorm(ranef(mod_onset_1)$C_ID[,1])
 # Same issues
 ```
+
+Similarly to the mixed effects models for sleep offset time, there is no evidence of multicollinearity across the board, but the assumptions are violated for each of the "All" and "t1" models. The assumptions were not violated for the "t2" models. I checked each of the models assumptions without the participants that were identified as outliers in the offset plots, but homogeneity was still violated for the "All" and "t1" models. There are also two outliers in "t2" that should be investigated.
 
 ## Efficiency (efficiency_t2)
 
@@ -814,6 +818,8 @@ qqnorm(resid(mod_eff_1))
 qqnorm(ranef(mod_eff_1)$C_ID[,1])
 ```
 
+For the mixed models predicting sleep efficiency, there is no significant evidence of multicollinearity. As for the model assumptions, there are no glaring violations, but there is one obvious outlier in the bottom left corner of the residual plots for the "All" and "t1" models.
+
 ## Wake After Sleep Onset (waso_T)
 
 ```{r}
@@ -933,6 +939,8 @@ plot(mod_waso_1)
 qqnorm(resid(mod_waso_1))
 qqnorm(ranef(mod_waso_1)$C_ID[,1])
 ```
+
+For the mixed models predicting WASO, there was no significant evidence of multicollinearity. However, the assumption of normally distributed residuals is violated for the "All" and "t1" models, while the assumptions of homogeneity are not overtly violated but certainly questionable for every WASO model, particularly the "t2" models. This implies that we might want to consider a different transformation for WASO, if any at all.
 
 # Correlation Matrix
 
