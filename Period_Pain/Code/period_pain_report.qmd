@@ -191,6 +191,9 @@ table(sleepfull$demo_degree)
 table(sleepfull$T_DD_PeriodPain,sleepfull$T_DD_Period)
 table(sleepfull$T_DD_PeriodPain)
 table(sleepfull$T_DD_PeriodFlow)
+
+# Removing 494 and 522, both of whom had absurd onset/offset times
+sleepfull <- sleepfull %>% filter(C_ID != 494 & C_ID != 522)
 ```
 
 # EDA
@@ -234,39 +237,34 @@ sleepfull %>%
   group_by(Time) %>% 
   summarise(dist = n_distinct(C_ID))
 
-# There are 67 unique participants at timepoint 1 and 30 unique participants at timepoint 2
+# There are 65 unique participants at timepoint 1 and 30 unique participants at timepoint 2
 
 ## How many days is someone on their period. 
 
 table(sleepfull$T_DD_Period)
-100/(539+100)
+96/(529+96)
 
-# Of the 639 total observations across both time points, there are 100 days where a participant
-# was on their period, and 539 days where a participant was not on their period. This comes out 
-# to ~15.7% of the observations.
+# Of the 666 total observations across both time points, there are 96 days where a participant was on their period, and 529 days where a participant was not on their period. This comes out to ~15.4% of the observations.
 
 table(sleepfull$T_DD_Period, sleepfull$Time)
 
 ## How many days on period at time 1 and time 2.  
 sleepfull %>% group_by(Time, T_DD_Period) %>% summarize(n = n())
-# As seen here, there are 41 observations where Period Pain is NA. I'm going to look at these
-# observations to see what the other period-related variables are.
+# As seen here, there are 41 observations where Period Pain is NA. I'm going to look at these observations to see what the other period-related variables are.
 sleepfull %>% filter(is.na(T_DD_Period)) %>% select(T_DD_Period:T_DD_PeriodFlow) %>% view()
-# One observation with T_DD_Period = NA has T_DD_PeriodPain and T_DD_PeriodFlow as 0,
-# so this value should be 0 as well. The rest are NA across the board. What should we do with these?
+# One observation with T_DD_Period = NA has T_DD_PeriodPain and T_DD_PeriodFlow as 0, so this value should be 0 as well. The rest are NA across the board. What should we do with these? ANSWER: KEEP
 
 ## Finding the average pain and flow for those on their period at each time point and across both t1 and t2
 sleepfull %>% group_by(T_DD_Period) %>% summarize(avg_pain = mean(T_DD_PeriodPain, na.rm = T), avg_flow = mean(T_DD_PeriodFlow, na.rm = T), n = n())
-# The average pain level experienced across both time points is 2.8.
-# The average flow level experienced across both time points is 4.82.
+# The average pain level experienced across both time points is 2.82.
+# The average flow level experienced across both time points is 4.89.
 sleepfull %>% group_by(Time, T_DD_Period) %>% summarize(avg_pain = mean(T_DD_PeriodPain, na.rm = T), avg_flow = mean(T_DD_PeriodFlow, na.rm = T), n = n())
-# The average pain level experienced across t1 is 3.19, and the average pain level experienced across t2 is 2.44
-# The average flow level experienced across t1 is 5.46, and the average flow level experienced across t2 is 4.25
+# The average pain level experienced across t1 is 3.27, and the average pain level experienced across t2 is 2.44
+# The average flow level experienced across t1 is 5.69, and the average flow level experienced across t2 is 4.25
 
 # Looking to find any NA observations for Pain and Flow
 sleepfull %>% filter(T_DD_Period == 0 & Time == 0 ) %>% select(C_ID, T_DD_Period,T_DD_PeriodDay, T_DD_PeriodPain, T_DD_PeriodFlow) %>% View()
 sleepfull %>% filter(T_DD_Period == 0 & Time == 1 ) %>% select(C_ID, T_DD_Period,T_DD_PeriodDay, T_DD_PeriodPain, T_DD_PeriodFlow) %>% View()
-# 506 from t2 has Period = 0 but Pain and Flow = NA
 
 ## Painkiller 
 # How many observed painkiller uses are there for each trial?
@@ -281,6 +279,7 @@ sleepfull %>% group_by(painkiller) %>%
             avg_efcy = mean(efficiency_T, na.rm = T),
             avg_waso = mean(waso_T, na.rm = T),
             avg_time = mean(sleep_time_T, na.rm = T))
+# The participants using painkillers had a higher average pain level than those who did not, but pain level for both of these cohorts is subjectively low (0.392 for pk = 0, 1.7 for pk = 1). Average flow was also higher for those taking painkillers at 2.4 compared to 0.683 for those not taking painkillers. Sleep quality and efficiency were higher in those taking painkillers, but they spent more time awake after sleep onset. The average sleep time is the same for both cohorts.
 
 #How much is missing?
 # apply(sleepfull, 2, function(x){sum(is.na(x))})
@@ -335,6 +334,7 @@ ggplot(aes(x = T_DD_PeriodFlow, y = log(waso_T + 1), color = as.factor(Time)), d
 # All
 mod_sleep_time_all <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_sleep_time_all)
+# Across timepoint 1 and timepoint 2, when a participant was on their period they got 22.4 more minutes of sleep compared to those not on their period. However, for a one point increase in pain, sleep time decreases by 7.63 minutes.
 confint(mod_sleep_time_all)
 vif(mod_sleep_time_all)
 # No evidence of multicollinearity in this model
@@ -344,16 +344,19 @@ qqnorm(ranef(mod_sleep_time_all)$C_ID[,1])
 # partial f test
 mod_red <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 anova(mod_red, mod_sleep_time_all)
+# Chisq = 17.6, p = 0.000157, therefore meaning that adding an interaction term between age and time to our mixed effects model predicting total sleep time across both timepoints is statistically significant.
 
 # t1
 mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_sleep_time_0)
+# At timepoint 1, when a participant was on their period, they got 3.088 more minutes of sleep compared to those not on their period. Contrary to the model across both time points, for a one point increase in period pain, participants got 1.517 more minutes of sleep.
 confint(mod_sleep_time_0)
 vif(mod_sleep_time_0)
 # No evidence of multicollinearity
 plot(mod_sleep_time_0)
 qqnorm(resid(mod_sleep_time_0))
 qqnorm(ranef(mod_sleep_time_0)$C_ID[,1])
+# Assumptions look good
 
 #t2
 hist(sleepfull$sleep_time_T)
@@ -637,7 +640,7 @@ The mixed models predicting sleep offset time showed no significant evidence of 
 ```{r}
 ## PAIN
 # All
-mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(C_ID != c(494, 522)))
+mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(C_ID != 494 & C_ID != 522))
 summary(mod_onset_all)
 confint(mod_onset_all)
 vif(mod_onset_all)
@@ -932,7 +935,7 @@ hist(sleepfull$waso_T) # might need log due to right-skew
 
 ## PAIN
 # All
-mod_waso_all <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+mod_waso_all <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_waso_all)
 confint(mod_waso_all)
 vif(mod_waso_all)
@@ -942,11 +945,11 @@ qqnorm(resid(mod_waso_all))
 qqnorm(ranef(mod_waso_all)$C_ID[,1])
 # This model has definitely got some funk to it. While the assumption of homogeneity isn't violated, the QQ plot of the residuals shows a violation. 
 # partial f test
-mod_red <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
+mod_red <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 anova(mod_red, mod_waso_all)
 
 # t1
-mod_waso_0 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+mod_waso_0 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_waso_0)
 confint(mod_waso_0)
 vif(mod_waso_0)
@@ -968,7 +971,7 @@ qqnorm(ranef(mod_waso_1)$C_ID[,1])
 
 ## FLOW
 # All
-mod_waso_all <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+mod_waso_all <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_waso_all)
 confint(mod_waso_all)
 vif(mod_waso_all)
@@ -977,11 +980,11 @@ plot(mod_waso_all)
 qqnorm(resid(mod_waso_all))
 qqnorm(ranef(mod_waso_all)$C_ID[,1])
 # partial f test
-mod_red <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+mod_red <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 anova(mod_red, mod_waso_all)
 
 # t1
-mod_waso_0 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+mod_waso_0 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_waso_0)
 confint(mod_waso_0)
 vif(mod_waso_0)
@@ -991,7 +994,7 @@ qqnorm(resid(mod_waso_0))
 qqnorm(ranef(mod_waso_0)$C_ID[,1])
 
 # t2
-mod_waso_1 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+mod_waso_1 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_waso_1)
 confint(mod_waso_1)
 vif(mod_waso_1)
@@ -1002,7 +1005,7 @@ qqnorm(ranef(mod_waso_1)$C_ID[,1])
 
 ## PAIN & FLOW
 # All
-mod_waso_all <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+mod_waso_all <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_waso_all)
 confint(mod_waso_all)
 vif(mod_waso_all)
@@ -1011,11 +1014,11 @@ plot(mod_waso_all)
 qqnorm(resid(mod_waso_all))
 qqnorm(ranef(mod_waso_all)$C_ID[,1])
 # partial f test
-mod_red <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+mod_red <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 anova(mod_red, mod_waso_all)
 
 # t1
-mod_waso_0 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+mod_waso_0 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_waso_0)
 confint(mod_waso_0)
 vif(mod_waso_0)
@@ -1025,7 +1028,7 @@ qqnorm(resid(mod_waso_0))
 qqnorm(ranef(mod_waso_0)$C_ID[,1])
 
 # t2
-mod_waso_1 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+mod_waso_1 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_waso_1)
 confint(mod_waso_1)
 vif(mod_waso_1)
@@ -1036,7 +1039,7 @@ qqnorm(ranef(mod_waso_1)$C_ID[,1])
 
 ## PAIN:FLOW
 # All
-mod_waso_all <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+mod_waso_all <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_waso_all)
 confint(mod_waso_all)
 vif(mod_waso_all)
@@ -1045,11 +1048,11 @@ plot(mod_waso_all)
 qqnorm(resid(mod_waso_all))
 qqnorm(ranef(mod_waso_all)$C_ID[,1])
 # partial f test
-mod_red <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
+mod_red <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 anova(mod_red, mod_waso_all)
 
 # t1
-mod_waso_0 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
+mod_waso_0 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_waso_0)
 confint(mod_waso_0)
 vif(mod_waso_0)
@@ -1059,7 +1062,7 @@ qqnorm(resid(mod_waso_0))
 qqnorm(ranef(mod_waso_0)$C_ID[,1])
 
 # t2
-mod_waso_1 <- lmer(log(waso_T + 1) ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
+mod_waso_1 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_waso_1)
 confint(mod_waso_1)
 vif(mod_waso_1)
@@ -1201,9 +1204,10 @@ qqnorm(resid(mod_qual_1))
 qqnorm(ranef(mod_qual_1)$C_ID[,1])
 ```
 
-
 # Correlation Matrix
 
 ```{r}
 cor(sleepfull %>% select(BodyTotal, weekend, T_DD_Period, BMI, age, T_DD_PeriodPain, T_DD_PeriodFlow), use = "complete.obs")
 ```
+
+Participant 258 is validated. 494 and 522 are being dropped.

@@ -707,3 +707,8 @@ qqnorm(ranef(mod_qual_1)$C_ID[,1])
 # on Period -> Earlier Sleep onset time
 # Higher pain, later sleep onset time -> Class significance
 # If you're on your period, you go to sleep earlier, but when you have more pain, you go to sleep later
+
+
+## 1/22
+# Looking at Pain over time. Density plots.
+# Participant 258 is validated. 522 has weird numbers, but the diary couldn't be found
