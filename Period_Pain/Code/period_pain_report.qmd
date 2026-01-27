@@ -102,15 +102,15 @@ t1 %>%
   filter(T_DD_Period == 1) %>% 
   select(C_ID, T_DD_Period, T_DD_PeriodPain, T_DD_PeriodDay) %>%
   group_by(C_ID) %>% 
-  summarise(num_days = n_distinct(T_DD_PeriodDay)) %>% 
-  view()
+  summarise(num_days = n_distinct(T_DD_PeriodDay)) # %>% 
+  # view()
  
 t2 %>% 
   filter(T_DD_Period == 1) %>% 
   select(C_ID, T_DD_Period, T_DD_PeriodPain, T_DD_PeriodDay) %>%
   group_by(C_ID) %>% 
-  summarise(num_days = n_distinct(T_DD_PeriodDay)) %>% 
-  view()
+  summarise(num_days = n_distinct(T_DD_PeriodDay)) # %>% 
+  # view()
 
 ## Replacing 999 with NAs in t1 and t2
 t1[t1==-999] = NA
@@ -186,7 +186,7 @@ sleepfull <- bind_rows(t1, t2)
 sleepfull <- sleepfull %>% mutate(demo_child_age_check = as.numeric(demo_child_age_check)) %>% rename(age = demo_child_age_check)
 sleepfull <- sleepfull %>% mutate(BMI = as.numeric(BMI)) 
 
-sleepfull %>% filter(C_ID == 442) %>% select(C_ID, T_DD_NightDate,T_DD_Period, T_DD_PeriodFlow, T_DD_PeriodPain) %>% View()
+sleepfull %>% filter(C_ID == 442) %>% select(C_ID, T_DD_NightDate,T_DD_Period, T_DD_PeriodFlow, T_DD_PeriodPain) # %>% View()
 table(sleepfull$demo_degree)
 table(sleepfull$T_DD_PeriodPain,sleepfull$T_DD_Period)
 table(sleepfull$T_DD_PeriodPain)
@@ -251,7 +251,7 @@ table(sleepfull$T_DD_Period, sleepfull$Time)
 ## How many days on period at time 1 and time 2.  
 sleepfull %>% group_by(Time, T_DD_Period) %>% summarize(n = n())
 # As seen here, there are 41 observations where Period Pain is NA. I'm going to look at these observations to see what the other period-related variables are.
-sleepfull %>% filter(is.na(T_DD_Period)) %>% select(T_DD_Period:T_DD_PeriodFlow) %>% view()
+sleepfull %>% filter(is.na(T_DD_Period)) %>% select(T_DD_Period:T_DD_PeriodFlow) # %>% view()
 # One observation with T_DD_Period = NA has T_DD_PeriodPain and T_DD_PeriodFlow as 0, so this value should be 0 as well. The rest are NA across the board. What should we do with these? ANSWER: KEEP
 
 ## Finding the average pain and flow for those on their period at each time point and across both t1 and t2
@@ -263,8 +263,8 @@ sleepfull %>% group_by(Time, T_DD_Period) %>% summarize(avg_pain = mean(T_DD_Per
 # The average flow level experienced across t1 is 5.69, and the average flow level experienced across t2 is 4.25
 
 # Looking to find any NA observations for Pain and Flow
-sleepfull %>% filter(T_DD_Period == 0 & Time == 0 ) %>% select(C_ID, T_DD_Period,T_DD_PeriodDay, T_DD_PeriodPain, T_DD_PeriodFlow) %>% View()
-sleepfull %>% filter(T_DD_Period == 0 & Time == 1 ) %>% select(C_ID, T_DD_Period,T_DD_PeriodDay, T_DD_PeriodPain, T_DD_PeriodFlow) %>% View()
+sleepfull %>% filter(T_DD_Period == 0 & Time == 0 ) %>% select(C_ID, T_DD_Period,T_DD_PeriodDay, T_DD_PeriodPain, T_DD_PeriodFlow) # %>% View()
+sleepfull %>% filter(T_DD_Period == 0 & Time == 1 ) %>% select(C_ID, T_DD_Period,T_DD_PeriodDay, T_DD_PeriodPain, T_DD_PeriodFlow) # %>% View()
 
 ## Painkiller 
 # How many observed painkiller uses are there for each trial?
@@ -334,7 +334,6 @@ ggplot(aes(x = T_DD_PeriodFlow, y = log(waso_T + 1), color = as.factor(Time)), d
 # All
 mod_sleep_time_all <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_sleep_time_all)
-# Across timepoint 1 and timepoint 2, when a participant was on their period they got 22.4 more minutes of sleep compared to those not on their period. However, for a one point increase in pain, sleep time decreases by 7.63 minutes.
 confint(mod_sleep_time_all)
 vif(mod_sleep_time_all)
 # No evidence of multicollinearity in this model
@@ -640,7 +639,7 @@ The mixed models predicting sleep offset time showed no significant evidence of 
 ```{r}
 ## PAIN
 # All
-mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(C_ID != 494 & C_ID != 522))
+mod_onset_all <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_onset_all)
 confint(mod_onset_all)
 vif(mod_onset_all)
@@ -650,7 +649,7 @@ qqnorm(resid(mod_onset_all))
 qqnorm(ranef(mod_onset_all)$C_ID[,1])
 # Onset has the same problems as offset. Even with 494 and 522 removed, there's still a violation of homogeneity for the residuals.
 # partial f test
-mod_red <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(C_ID != c(494, 522)))
+mod_red <- lmer(start_time_TRM_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 anova(mod_red, mod_onset_all)
 
 # t1
