@@ -199,9 +199,13 @@ sleepfull <- sleepfull %>% filter(C_ID != 494 & C_ID != 522)
 # EDA
 
 ```{r}
+# distinct participants
+n_distinct(sleepfull$C_ID)
+
 # Age distribution in the full dataset
 mean(sleepfull$age)
 sleepfull %>% group_by(Time) %>% summarize(mean_age = mean(age))
+sleepfull %>% group_by(Time) %>% summarize(sd_age = sd(age))
   
 # Average age overall is 13.55. At time 1, the average age is 13.3 and at time 2 it is 14.
 
