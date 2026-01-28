@@ -186,7 +186,7 @@ sleepfull <- bind_rows(t1, t2)
 sleepfull <- sleepfull %>% mutate(demo_child_age_check = as.numeric(demo_child_age_check)) %>% rename(age = demo_child_age_check)
 sleepfull <- sleepfull %>% mutate(BMI = as.numeric(BMI)) 
 
-sleepfull %>% filter(C_ID == 442) %>% select(C_ID, T_DD_NightDate,T_DD_Period, T_DD_PeriodFlow, T_DD_PeriodPain) # %>% View()
+sleepfull %>% filter(C_ID == 442) %>% select(C_ID, Time, T_DD_NightDate,T_DD_Period, T_DD_PeriodFlow, T_DD_PeriodPain) # %>% View()
 table(sleepfull$demo_degree)
 table(sleepfull$T_DD_PeriodPain,sleepfull$T_DD_Period)
 table(sleepfull$T_DD_PeriodPain)
