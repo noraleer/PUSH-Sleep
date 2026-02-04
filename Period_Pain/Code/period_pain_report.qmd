@@ -202,6 +202,25 @@ sleepfull <- sleepfull %>% filter(C_ID != 494 & C_ID != 522)
 # distinct participants
 n_distinct(sleepfull$C_ID)
 
+# race distribution
+races <- sleepfull %>% 
+  select(C_ID, demo_child_race___1:demo_child_race___5) %>% 
+  unique() %>% 
+  na.omit()
+
+two_plus_races <- races %>%
+  rowwise() %>% # Treat each row as a group for the next operation
+  filter(sum(c_across(everything())) >= 2) %>% # Sum across all columns and filter
+  ungroup() # Ungroup the data frame
+
+# race stuff from original Empathy data
+races2 <- Empathy %>% 
+  select(C_ID, demo_child_race___1t1:demo_child_race___5t1, 
+         demo_child_race___1t2:demo_child_race___5t2) %>% na.omit()
+
+# WORKING ON THIS... ASKED JULES A QUESTION
+# - some people have no race marked at time 2 in the original empathy data.... is this a mistake?
+
 # Age distribution in the full dataset
 mean(sleepfull$age)
 sleepfull %>% group_by(Time) %>% summarize(mean_age = mean(age))
