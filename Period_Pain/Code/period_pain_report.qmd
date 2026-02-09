@@ -43,6 +43,9 @@ diary_t2 <- readxl::read_xlsx(here("./Period_Pain/Data", "E-Sleep_DailyDiary_FIN
 ```
 
 ```{r, include = FALSE}
+# remove T2 races from Empathy data bc some entries are missing
+Empathy <- Empathy %>% select(-c(demo_child_race___1t2:demo_child_race___5t2))
+
 ## Mutating subject_id_t- to a double
 actigraphy_t1_dec <- actigraphy_t1 %>% 
   select(-start_time_t1, -end_time_t1) %>% 
@@ -203,23 +206,34 @@ sleepfull <- sleepfull %>% filter(C_ID != 494 & C_ID != 522)
 n_distinct(sleepfull$C_ID)
 
 # race distribution
+
+# 1 - Asian
+# 2 - American Indian or Alaskan Native
+# 3 - Black or African American
+# 4 - Native Hawaiian or Other Pacific Islander
+# 5 - White or Caucasian 
+
 races <- sleepfull %>% 
   select(C_ID, demo_child_race___1:demo_child_race___5) %>% 
   unique() %>% 
   na.omit()
 
 two_plus_races <- races %>%
-  rowwise() %>% # Treat each row as a group for the next operation
-  filter(sum(c_across(everything())) >= 2) %>% # Sum across all columns and filter
-  ungroup() # Ungroup the data frame
+  rowwise() %>% 
+  filter(sum(c_across(demo_child_race___1:demo_child_race___5)) >= 2) %>%
+  ungroup() 
 
-# race stuff from original Empathy data
-races2 <- Empathy %>% 
-  select(C_ID, demo_child_race___1t1:demo_child_race___5t1, 
-         demo_child_race___1t2:demo_child_race___5t2) %>% na.omit()
+l <- two_plus_races %>% select(C_ID) %>% unlist()
+not_multiracial <- races %>% filter(!(C_ID %in% l))
 
-# WORKING ON THIS... ASKED JULES A QUESTION
-# - some people have no race marked at time 2 in the original empathy data.... is this a mistake?
+# % white: 
+not_multiracial %>% filter(demo_child_race___5 == 1) %>% nrow()
+# 42 / 63 = 66.7%
+
+# % black: 
+not_multiracial %>% filter(demo_child_race___3 == 1) %>% nrow()
+# 2 / 63 = 3.2%
+
 
 # Age distribution in the full dataset
 mean(sleepfull$age)
@@ -262,9 +276,12 @@ sleepfull %>%
 
 # There are 65 unique participants at timepoint 1 and 30 unique participants at timepoint 2
 
+# How much sleep are people getting at each time point?
+sleepfull %>% group_by(Time) %>% summarize(avg_sleep = round(mean(sleep_time_T, na.rm = T), 2), sd_sleep = sd(sleep_time_T, na.rm = T), n = n())
+
 ## How many days is someone on their period. 
 
-table(sleepfull$T_DD_Period)
+table(sleepfull$T_DD_Period, useNA = 'always')
 96/(529+96)
 
 # Of the 666 total observations across both time points, there are 96 days where a participant was on their period, and 529 days where a participant was not on their period. This comes out to ~15.4% of the observations.
@@ -273,7 +290,7 @@ table(sleepfull$T_DD_Period, sleepfull$Time)
 
 ## How many days on period at time 1 and time 2.  
 sleepfull %>% group_by(Time, T_DD_Period) %>% summarize(n = n())
-# As seen here, there are 41 observations where Period Pain is NA. I'm going to look at these observations to see what the other period-related variables are.
+# As seen here, there are 41 observations where Period is NA. I'm going to look at these observations to see what the other period-related variables are.
 sleepfull %>% filter(is.na(T_DD_Period)) %>% select(T_DD_Period:T_DD_PeriodFlow) # %>% view()
 # One observation with T_DD_Period = NA has T_DD_PeriodPain and T_DD_PeriodFlow as 0, so this value should be 0 as well. The rest are NA across the board. What should we do with these? ANSWER: KEEP
 
@@ -281,7 +298,7 @@ sleepfull %>% filter(is.na(T_DD_Period)) %>% select(T_DD_Period:T_DD_PeriodFlow)
 sleepfull %>% group_by(T_DD_Period) %>% summarize(avg_pain = mean(T_DD_PeriodPain, na.rm = T), avg_flow = mean(T_DD_PeriodFlow, na.rm = T), n = n())
 # The average pain level experienced across both time points is 2.82.
 # The average flow level experienced across both time points is 4.89.
-sleepfull %>% group_by(Time, T_DD_Period) %>% summarize(avg_pain = mean(T_DD_PeriodPain, na.rm = T), avg_flow = mean(T_DD_PeriodFlow, na.rm = T), n = n())
+sleepfull %>% group_by(Time, T_DD_Period) %>% summarize(avg_pain = mean(T_DD_PeriodPain, na.rm = T), sd_pain = sd(T_DD_PeriodPain, na.rm = T), avg_flow = mean(T_DD_PeriodFlow, na.rm = T), sd_flow = sd(T_DD_PeriodFlow, na.rm = T),n = n())
 # The average pain level experienced across t1 is 3.27, and the average pain level experienced across t2 is 2.44
 # The average flow level experienced across t1 is 5.69, and the average flow level experienced across t2 is 4.25
 
