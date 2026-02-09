@@ -828,6 +828,7 @@ Similarly to the mixed effects models for sleep offset time, there is no evidenc
 # All
 mod_eff_all <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_eff_all)
+# Only the model intercept is statistically significant at alpha = 0.05
 confint(mod_eff_all)
 vif(mod_eff_all)
 # No evidence of multicollinearity
@@ -843,6 +844,7 @@ anova(mod_red, mod_eff_all)
 mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_eff_0)
 confint(mod_eff_0)
+# Only T_DD_Period is significant at alpha = 0.05. Pain is significant at 0.1, but 0 is in the 95% CI.
 vif(mod_eff_0)
 # No evidence of multicollinearity
 plot(mod_eff_0)
@@ -854,6 +856,7 @@ qqnorm(ranef(mod_eff_0)$C_ID[,1])
 mod_eff_1 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_eff_1)
 confint(mod_eff_1)
+# Only the intercept is significant
 vif(mod_eff_1)
 # No evidence of multicollinearity
 plot(mod_eff_1)
@@ -866,6 +869,7 @@ qqnorm(ranef(mod_eff_1)$C_ID[,1])
 mod_eff_all <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_eff_all)
 confint(mod_eff_all)
+# Only the intercept is significant
 vif(mod_eff_all)
 # No evidence of multicollinearity
 plot(mod_eff_all)
@@ -880,6 +884,7 @@ anova(mod_red, mod_eff_all)
 mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_eff_0)
 confint(mod_eff_0)
+# Only the intercept is significant at 0.05. T_DD_Period is sig. at 0.1
 vif(mod_eff_0)
 # No evidence of multicollinearity
 plot(mod_eff_0)
@@ -890,6 +895,7 @@ qqnorm(ranef(mod_eff_0)$C_ID[,1])
 mod_eff_1 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_eff_1)
 confint(mod_eff_1)
+# Only intercept is significant
 vif(mod_eff_1)
 # No evidence of multicollinearity
 plot(mod_eff_1)
@@ -901,6 +907,7 @@ qqnorm(ranef(mod_eff_1)$C_ID[,1])
 mod_eff_all <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_eff_all)
 confint(mod_eff_all)
+# Intercept is significant at 0.001, Period is significant at 0.1 but 0 is in the confidence interval
 vif(mod_eff_all)
 # No evidence of multicollinearity
 plot(mod_eff_all)
@@ -914,6 +921,7 @@ anova(mod_red, mod_eff_all)
 mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_eff_0)
 confint(mod_eff_0)
+# T_DD_Period significant at 0.1. 0 is not in the 95% CI.
 vif(mod_eff_0)
 # Moderate evidence of multicollinearity for PeriodFlow
 plot(mod_eff_0)
@@ -924,6 +932,7 @@ qqnorm(ranef(mod_eff_0)$C_ID[,1])
 mod_eff_1 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_eff_1)
 confint(mod_eff_1)
+# Intercept is sig.
 vif(mod_eff_1)
 # No evidence of multicollinearity
 plot(mod_eff_1)
@@ -935,6 +944,7 @@ qqnorm(ranef(mod_eff_1)$C_ID[,1])
 mod_eff_all <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull)
 summary(mod_eff_all)
 confint(mod_eff_all)
+# Intercept is sig.
 vif(mod_eff_all)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow, PeriodPain, PeriodFlow, and Period
 plot(mod_eff_all)
@@ -948,6 +958,7 @@ anova(mod_red, mod_eff_all)
 mod_eff_0 <- lmer(efficiency_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_eff_0)
 confint(mod_eff_0)
+# Intercept sig. at 0.001, Period sig at 0.05
 vif(mod_eff_0)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow, PeriodPain, PeriodFlow, and Period
 plot(mod_eff_0)
@@ -977,6 +988,7 @@ hist(sleepfull$waso_T) # might need log due to right-skew
 mod_waso_all <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) * Time + T_DD_PeriodPain + (1|C_ID), data = sleepfull)
 summary(mod_waso_all)
 confint(mod_waso_all)
+# Only BodyTotal and BMI are significant
 vif(mod_waso_all)
 # No evidence of multicollinearity
 plot(mod_waso_all)
@@ -991,6 +1003,7 @@ anova(mod_red, mod_waso_all)
 mod_waso_0 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_waso_0)
 confint(mod_waso_0)
+# Only the intercept is significant
 vif(mod_waso_0)
 # No evidence of multicollinearity
 plot(mod_waso_0)
@@ -1002,6 +1015,7 @@ qqnorm(ranef(mod_waso_0)$C_ID[,1])
 mod_waso_1 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_waso_1)
 confint(mod_waso_1)
+# Period Pain is significant at 0.001, but Period is not significant at all? Also the intercept here is -87.807, which means that holding all variables constant, WASO is -87.807? How can you spend -87 minutes awake after falling asleep?
 vif(mod_waso_1)
 # No evidence of multicollinearity
 plot(mod_waso_1)
@@ -1026,6 +1040,7 @@ anova(mod_red, mod_waso_all)
 mod_waso_0 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_waso_0)
 confint(mod_waso_0)
+# Only intercept sig.
 vif(mod_waso_0)
 # No evidence of multicollinearity
 plot(mod_waso_0)
@@ -1104,6 +1119,7 @@ qqnorm(ranef(mod_waso_0)$C_ID[,1])
 mod_waso_1 <- lmer(waso_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain*T_DD_PeriodFlow + (1|C_ID), data = sleepfull %>% filter(Time == 1))
 summary(mod_waso_1)
 confint(mod_waso_1)
+# Pain and Flow are highly significant in this model, as is Period and the interaction term between PeriodPain and PeriodFlow.
 vif(mod_waso_1)
 # Significant evidence of multicollinearity for PeriodPain:PeriodFlow, PeriodPain, moderate evidence of multicollinearity for PeriodFlow and Period
 plot(mod_waso_1)
