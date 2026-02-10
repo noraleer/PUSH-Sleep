@@ -277,7 +277,7 @@ sleepfull %>%
 # There are 65 unique participants at timepoint 1 and 30 unique participants at timepoint 2
 
 # How much sleep are people getting at each time point?
-sleepfull %>% group_by(Time) %>% summarize(avg_sleep = round(mean(sleep_time_T, na.rm = T), 2), sd_sleep = sd(sleep_time_T, na.rm = T), n = n())
+sleepfull %>% summarize(avg_sleep = round(mean(sleep_time_T, na.rm = T), 2), sd_sleep = sd(sleep_time_T, na.rm = T), n = n())
 
 ## How many days is someone on their period. 
 
@@ -295,10 +295,10 @@ sleepfull %>% filter(is.na(T_DD_Period)) %>% select(T_DD_Period:T_DD_PeriodFlow)
 # One observation with T_DD_Period = NA has T_DD_PeriodPain and T_DD_PeriodFlow as 0, so this value should be 0 as well. The rest are NA across the board. What should we do with these? ANSWER: KEEP
 
 ## Finding the average pain and flow for those on their period at each time point and across both t1 and t2
-sleepfull %>% group_by(T_DD_Period) %>% summarize(avg_pain = mean(T_DD_PeriodPain, na.rm = T), avg_flow = mean(T_DD_PeriodFlow, na.rm = T), n = n())
+sleepfull %>% group_by(T_DD_Period) %>% summarize(avg_pain = mean(T_DD_PeriodPain, na.rm = T), sd_pain = sd(T_DD_PeriodPain, na.rm = T), avg_flow = mean(T_DD_PeriodFlow, na.rm = T), sd_flow = sd(T_DD_PeriodFlow, na.rm = T), n = n())
 # The average pain level experienced across both time points is 2.82.
 # The average flow level experienced across both time points is 4.89.
-sleepfull %>% group_by(Time, T_DD_Period) %>% summarize(avg_pain = mean(T_DD_PeriodPain, na.rm = T), sd_pain = sd(T_DD_PeriodPain, na.rm = T), avg_flow = mean(T_DD_PeriodFlow, na.rm = T), sd_flow = sd(T_DD_PeriodFlow, na.rm = T),n = n())
+sleepfull %>% group_by(Time, T_DD_Period) %>% summarize(avg_pain = mean(T_DD_PeriodPain, na.rm = T), sd_pain = sd(T_DD_PeriodPain, na.rm = T), avg_flow = mean(T_DD_PeriodFlow, na.rm = T), sd_flow = sd(T_DD_PeriodFlow, na.rm = T), n = n())
 # The average pain level experienced across t1 is 3.27, and the average pain level experienced across t2 is 2.44
 # The average flow level experienced across t1 is 5.69, and the average flow level experienced across t2 is 4.25
 
