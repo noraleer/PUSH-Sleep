@@ -385,6 +385,24 @@ mod_red <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(a
 anova(mod_red, mod_sleep_time_all)
 # Chisq = 17.6, p = 0.000157, therefore meaning that adding an interaction term between age and time to our mixed effects model predicting total sleep time across both timepoints is statistically significant.
 
+# Pulling the model data
+mod_dat <- mod_sleep_time_all@frame
+mod_ids <- mod_dat$C_ID
+mod_obs <- sleepfull %>% 
+  filter(C_ID %in% mod_ids) %>% 
+  select(sleep_time_T, end_time_dec_T, start_time_TRM_T, efficiency_T, waso_T, BodyTotal, weekend, T_DD_Period, BMI, age, T_DD_PeriodPain, T_DD_PeriodFlow, C_ID, Time) %>% 
+  drop_na()
+
+table(mod_obs %>% filter(Time == 0) %>% select(T_DD_Period), useNA = "always")
+table(mod_obs %>% filter(Time == 1) %>% select(T_DD_Period), useNA = "always")
+
+mod_obs %>% 
+  group_by(Time) %>% 
+  summarize(avg_dur = mean(sleep_time_T, na.rm = T),
+            sd_dur = sd(sleep_time_T, na.rm = T))
+
+
+
 # t1
 mod_sleep_time_0 <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend + T_DD_Period + BMI + I(age-13) + T_DD_PeriodPain + (1|C_ID), data = sleepfull %>% filter(Time == 0))
 summary(mod_sleep_time_0)
