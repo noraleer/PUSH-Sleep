@@ -1289,16 +1289,14 @@ Participant 258 is validated. 494 and 522 are being dropped.
 
 ```{r}
 missing <- data.frame(colSums(is.na(sleepfull)))
-install.packages("VIM")
 library(VIM)
 aggr(sleepfull %>% select(start_time_TRM_T, end_time_dec_T, efficiency_T, waso_T,
                           sleep_time_T, T_DD_PeriodFlow, T_DD_PeriodPain, T_DD_SleepQual,
                           BMI, BodyTotal, weekend, age))
 
 matrixplot(sleepfull %>% select(start_time_TRM_T, end_time_dec_T, efficiency_T, waso_T,
-                          sleep_time_T, T_DD_Period, T_DD_PeriodFlow, T_DD_PeriodPain, T_DD_SleepQual,
-                          BMI, BodyTotal, weekend, age), interactive = T)
-help(matrixplot)
+                          sleep_time_T, T_DD_Period, T_DD_PeriodFlow, T_DD_PeriodPain,
+                          T_DD_SleepQual, BMI, BodyTotal, weekend, age), interactive = TRUE)
 ```
 
 start_time_TRM_T - 119
