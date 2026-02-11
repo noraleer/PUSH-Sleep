@@ -1284,3 +1284,35 @@ cor(sleepfull %>% select(BodyTotal, weekend, T_DD_Period, BMI, age, T_DD_PeriodP
 ```
 
 Participant 258 is validated. 494 and 522 are being dropped.
+
+# Looking for Missing Data
+
+```{r}
+missing <- data.frame(colSums(is.na(sleepfull)))
+```
+
+start_time_TRM_T - 119
+
+end_time_dec_T - 119
+
+efficiency_T - 119
+
+waso_T - 119
+
+sleep_time_T - 119
+
+T_DD_PeriodFlow - 43
+
+T_DD_Period - 41
+
+T_DD_PeriodPain - 41
+
+T_DD_SleepQual - 34
+
+BMI - 21
+
+BodyTotal - 7
+
+weekend - 0
+
+age -0
