@@ -1297,6 +1297,12 @@ aggr(sleepfull %>% select(start_time_TRM_T, end_time_dec_T, efficiency_T, waso_T
 matrixplot(sleepfull %>% select(start_time_TRM_T, end_time_dec_T, efficiency_T, waso_T,
                           sleep_time_T, T_DD_Period, T_DD_PeriodFlow, T_DD_PeriodPain,
                           T_DD_SleepQual, BMI, BodyTotal, weekend, age), interactive = TRUE)
+
+sleepfull %>% 
+  group_by(C_ID, Time) %>% 
+  summarize(mean(is.na()))
+
+mean(is.na(sleepfull))
 ```
 
 start_time_TRM_T - 119
@@ -1324,3 +1330,11 @@ BodyTotal - 7
 weekend - 0
 
 age -0
+
+Look if there are differences between where there's missing act data and not missing act data and if there are differences in diary variables between those times.
+
+-   Two sample t tests or box plots stratified by missing variables
+
+-   Are there relationships between missingness or is this random
+
+-   Is the probability of missingness related to a diary variable.
