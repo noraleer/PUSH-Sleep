@@ -204,6 +204,8 @@ sleepfull <- sleepfull %>% filter(C_ID != 494 & C_ID != 522)
 ```{r}
 # distinct participants
 n_distinct(sleepfull$C_ID)
+# participants at each time point
+sleepfull %>% group_by(Time) %>% summarize(n=n_distinct(C_ID))
 
 # race distribution
 
@@ -277,7 +279,7 @@ sleepfull %>%
 # There are 65 unique participants at timepoint 1 and 30 unique participants at timepoint 2
 
 # How much sleep are people getting at each time point?
-sleepfull %>% summarize(avg_sleep = round(mean(sleep_time_T, na.rm = T), 2), sd_sleep = sd(sleep_time_T, na.rm = T), n = n())
+sleepfull %>% group_by(Time) %>% summarize(avg_sleep = round(mean(sleep_time_T, na.rm = T), 2), sd_sleep = sd(sleep_time_T, na.rm = T), n = n())
 
 ## How many days is someone on their period. 
 
