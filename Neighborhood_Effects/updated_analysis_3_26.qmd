@@ -140,13 +140,43 @@ Each model also includes covariates: sex, grade, whether the study day was durin
 
 ### Model Analysis Summary
 
-
 ## Model Code
 
-BASIC MODEL: includes c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend
+**Neighborhood Model**: response \~ geo_COI_3.0 + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend + (1\|ParticipantID)
 
+**Family Model:** response \~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend + (1\|ParticipantID)
+
+**Sleep Environment Model**: response \~ c_se_12_v2 + c_se_8_v2 + c_se_11_v2 + c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend + (1\|ParticipantID)
+
+```{r}
+library(lme4)
+## Sleep Duration
+# Neighborhood Factors: Do I include COI_3.0 or just the subdomains?
+nbhd_dur <- lmer(C_ACTI_SleepTime ~ geo_COI_3.0 + geo_COI_ED_3.0 + geo_COI_HE_3.0 +
+                   geo_COI_SE_3.0 + c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend +
+                   (1|ParticipantID), data = models)
+# Family Factors
+fmly_dur <- lmer(C_ACTI_SleepTime ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS +
+                   c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend + (1|ParticipantID),
+                 data = models)
+# Sleep Environment Factors
+senv_dur <- lmer(C_ACTI_SleepTime ~ c_se_12_v2 + c_se_8_v2 + c_se_11_v2 + c_demo_8_v2 +
+                   c_demo_6_v2 + Day_Type + weekend + (1|ParticipantID), data = models)
+```
+
+Checking out the completeness of the categorical variables
+
+```{r}
+models %>% 
+  group_by(c_se_12_v2, c_se_8_v2, c_se_11_v2) %>% 
+  summarise(n = n())
+
+se_vars <- c(models$c_se_11_v2, models$c_se_12_v2, models$c_se_8_v2)
+
+complete <- models[complete.cases(models[, se_vars]), ]
+table(complete$c_se_11_v2)
+```
 
 ## Daily Variables
-
 
 ## Weekend Variables
