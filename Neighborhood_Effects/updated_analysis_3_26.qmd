@@ -10,9 +10,143 @@ editor: visual
 library(corrplot)
 library(tidyverse)
 
+
 # diary and actigraphy data
-acti_diary <- read_csv("PUSH_long_acti_diary_coi_demo_3.23.2026.csv")
+push_long <- read_csv("PUSH_long_acti_diary_3.23.2026.csv") %>% 
+  rename(ParticipantID = 'Global Participant ID')
 
 # survey data
-# waiting to get this from Jules
+push_wide <- read_csv("PUSH_actigraph_survey_geo_wide_8.7.25.csv")
 ```
+
+### Merge Datasets
+
+```{r}
+# left join
+all <- left_join(push_long, push_wide, by = "ParticipantID")
+
+# remove people who do not have actigraphy data?
+all <- all %>% filter(Data_Source != 'Diary')
+
+dim(all)
+all %>% group_by(ParticipantID) %>% summarize(days = n()) 
+
+all %>% group_by(ParticipantID) %>% summarize(days = n()) %>% ungroup() %>% group_by(days) %>% summarize(n = n())
+```
+
+## EDA
+
+We began by observing the distribution of the independent variables of interest (dependent variable distributions are observed with their models below).
+
+```{r}
+vars <- all %>% select(ParticipantID, merge_study_day, C_ACTI_Date,
+                         # dependent vars
+                         C_ACTI_SleepTime, 
+                         C_ACTI_WT_DEC, 
+                         C_ACTI_SOL, 
+                         C_ACTI_SleepOnsetTime_TRM, 
+                         C_ACTI_Efficiency, 
+                         C_ACTI_Waso, 
+                         C_ACTI_SleepTime_sd, 
+                         C_ACTI_WT_DEC_sd,
+                         C_ACTI_WakeTime_sd,
+                         C_ACTI_SleepOnsetTime_TRM_sd, 
+                         # covariates
+                         c_demo_8_v2, 
+                         c_demo_6_v2, 
+                         `Day Type`,
+                         #fixed effects
+                         geo_COI_3.0,
+                         geo_COI_ED_3.0,
+                         geo_COI_HE_3.0,
+                         geo_COI_SE_3.0,
+                         P_COHESION,
+                         C_MESA_FT,
+                         C_MESA_ES,
+                         C_CHAOS,
+                         c_se_12_v2,
+                         c_se_8_v2,
+                         c_se_11_v2) %>% 
+  rename(Day_Type = `Day Type`) %>% 
+  mutate(c_demo_8_v2 = as.factor(c_demo_8_v2),
+         Day_Type = as.factor(Day_Type),
+         c_se_12_v2 = as.factor(c_se_12_v2),
+         c_se_8_v2 = as.factor(c_se_8_v2),
+         c_se_11_v2 = as.factor(c_se_11_v2))
+```
+
+### Fix Covariates
+
+Fix school year so people labeled '7' are labeled as '8'.
+
+Add weekend variable
+
+```{r}
+# c_demo_8_v2 -- Biological Sex
+# MALE (1), FEMALE (2), DON’T KNOW (3), PREFER NOT TO ANSWER (4)
+table(vars$c_demo_8_v2, useNA = "always")
+
+# c_demo_6_v2 -- Grade in School
+# 8th (1), 9th (2), 10th (3), 11th (4), 12th (5)
+table(vars$c_demo_6_v2, useNA = "always")
+all %>% filter(c_demo_6_v2 == 7) %>% select(c_demo_6_v2, c_demo_2_v2)
+
+model <- vars %>% mutate(c_demo_6_v2 = case_when(
+  c_demo_6_v2 == 1 ~ 8,
+  c_demo_6_v2 == 2 ~ 9,
+  c_demo_6_v2 == 3 ~ 10,
+  c_demo_6_v2 == 4 ~ 11,
+  c_demo_6_v2 == 5 ~ 12,
+  c_demo_6_v2 == 7 ~ 8))
+table(model$c_demo_6_v2, useNA = "always")
+
+# C_DD_PM_DayType -- School or Summer
+# Summer (0), Academic School Year (1)
+table(model$Day_Type)
+
+# add weekend variable
+  # weekend = Friday or Saturday night
+models <- model %>% mutate(weekday = wday(model$C_ACTI_Date, label = TRUE),
+                           weekend = 
+                             case_when(weekday == 'Fri' | weekday == 'Sat' ~ 1,
+                                       .default = 0))
+```
+
+### Fix Sleep Variables
+
+The three sleep environment variables are sleep disruptions, sleep quiet, and sleep dark. Notably, sleep dark is true for all individuals except for one. Because only one person does not have a dark sleep environment, this variable cannot be used in the models.
+
+```{r}
+# c_se_12_v2 -- sleep disruptions
+# YES (1), NO (2)
+table(models$c_se_12_v2, useNA = "always")
+
+# c_se_8_v2 -- sleep quiet
+# YES (1), NO (2)
+table(models$c_se_8_v2, useNA = "always")
+
+# # c_se_11_v2 -- sleep dark
+# YES (1), NO (2)
+table(models$c_se_11_v2, useNA = "always")
+```
+
+\newpage
+
+# Models
+
+We are interested in 8 dependent variables: sleep duration, offset/waketime, onset/falling asleep time, efficiency, duration variability, offset variation, and onset variation. There are 3 models for each dependent variable. The first model includes neighborhood factors (COI domains), the second model includes family factors (family cohesion, MESA variables, and CHAOS), and the third model includes sleep environment characteristics (number of sleep disruptions and if the environment was quiet). Originally, the third model was to also include if the environment was dark, but only one individual had a light environment, so this variable is not usable in the model.
+
+Each model also includes covariates: sex, grade, whether the study day was during the school year or summer, and whether the study day was a weekend (Friday or Saturday night). The levels in the grade in school variable were renamed to reflect the number of the grade. An individual also had grade level 7, which was not defined on the scale. Because the individual was 13, we put them into grade level 1, which is 8th grade.
+
+### Model Analysis Summary
+
+
+## Model Code
+
+BASIC MODEL: includes c_demo_8_v2 + c_demo_6_v2 + C_DD_PM_DayType + weekend
+
+
+## Daily Variables
+
+
+## Weekend Variables
