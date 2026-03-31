@@ -77,9 +77,9 @@ vars <- all %>% select(ParticipantID, merge_study_day, C_ACTI_Date,
 
 ### Fix Covariates
 
-Fix school year so people labeled '7' are labeled as '8'.
+Fixed school year so people labeled '7' are labeled as '8'.
 
-Add weekend variable
+Added weekend variable.
 
 ```{r}
 # c_demo_8_v2 -- Biological Sex
@@ -134,7 +134,9 @@ table(models$c_se_11_v2, useNA = "always")
 
 # Models
 
-We are interested in 7 dependent variables: sleep duration, offset/waketime, onset/falling asleep time, efficiency, duration variability, offset variation, and onset variation. There are 3 models for each dependent variable. The first model includes neighborhood factors (COI domains), the second model includes family factors (family cohesion, MESA variables, and CHAOS), and the third model includes sleep environment characteristics (number of sleep disruptions and if the environment was quiet). Originally, the third model was to also include if the environment was dark, but only one individual had a light environment, so this variable is not usable in the model.
+We are interested in 7 dependent variables: sleep duration, offset/waketime, onset/falling asleep time, efficiency, duration variability, offset variation, and onset variation. 
+
+There are 3 models for each dependent variable. The first model includes neighborhood factors (COI domains), the second model includes family factors (family cohesion, MESA variables, and CHAOS), and the third model includes sleep environment characteristics (number of sleep disruptions and if the environment was quiet). Originally, the third model was to also include if the environment was dark, but only one individual had a light environment, so this variable is not usable in the model.
 
 Each model also includes covariates: sex, grade, whether the study day was during the school year or summer, and whether the study day was a weekend (Friday or Saturday night). The levels in the grade in school variable were renamed to reflect the number of the grade. An individual also had grade level 7, which was not defined on the scale. Because the individual was 13, we put them into grade level 1, which is 8th grade.
 
@@ -245,7 +247,7 @@ summary(senv_eff)
 confint(senv_eff)
 ```
 
-## Weekly/Weekend Variables
+## Weekly Variables
 
 ### Duration Variability (C_ACTI_SleepTime_sd)
 
@@ -325,7 +327,11 @@ confint(senv_onsd)
 
 For the Neighborhood models, do I include COI_3.0 (seems like the overall variable) as the only neighborhood exp. variable or the domains?
 
+- Josie: last time we ran this analysis, we took out this variable because the subdomains covered it.
+
 I'm generally confused re: the differences between the "Daily", "Weekly", and "Weekend" models. Why is the weekly dataset only the first day of the study? Am I missing something here?
+
+- Josie: weekly models predict variation in the response variables. idk why weekend is included bc we filtered to first day bc the variables are from the survey data (meaning they don't change day-to-day).
 
 ## Comments
 
