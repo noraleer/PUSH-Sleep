@@ -1,15 +1,18 @@
 ---
-title: "Updated Neighborhood Analysis"
+title: "Updated PUSH Sleep and Neighborhood Effects"
+author: "Josie Peterburs and Oliver Schramm"
+date: today
 format: html
 editor: visual
 ---
 
-# PUSH Sleep and Neighborhood Effects
+# Data Cleaning
 
 ```{r message = FALSE, warning=FALSE}
 library(corrplot)
 library(tidyverse)
-
+library(lme4)
+library(lmerTest)
 
 # diary and actigraphy data
 push_long <- read_csv("PUSH_long_acti_diary_3.23.2026.csv") %>% 
@@ -136,115 +139,147 @@ table(models$c_se_11_v2, useNA = "always")
 
 We are interested in 7 dependent variables: sleep duration, offset/waketime, onset/falling asleep time, efficiency, duration variability, offset variation, and onset variation. 
 
-There are 3 models for each dependent variable. The first model includes neighborhood factors (COI domains), the second model includes family factors (family cohesion, MESA variables, and CHAOS), and the third model includes sleep environment characteristics (number of sleep disruptions and if the environment was quiet). Originally, the third model was to also include if the environment was dark, but only one individual had a light environment, so this variable is not usable in the model.
+There are 2 models for each dependent variable. The first model includes neighborhood factors (COI domains) and the second model includes family factors (family cohesion, MESA variables, and CHAOS).
 
-Each model also includes covariates: sex, grade, whether the study day was during the school year or summer, and whether the study day was a weekend (Friday or Saturday night). The levels in the grade in school variable were renamed to reflect the number of the grade. An individual also had grade level 7, which was not defined on the scale. Because the individual was 13, we put them into grade level 1, which is 8th grade.
+Each model also includes covariates: sex, grade, and whether the study day was a weekend (Friday or Saturday night). The levels in the grade in school variable were renamed to reflect the number of the grade. An individual also had grade level 7, which was not defined on the scale. Because the individual was 13, we put them into grade level 1, which is 8th grade.
 
-**Neighborhood Model**: response \~ geo_COI_3.0 + geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend + (1\|ParticipantID)
+**Neighborhood Model**: response \~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + weekend + (1\|ParticipantID)
 
-**Family Model:** response \~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend + (1\|ParticipantID)
+**Family Model:** response \~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + c_demo_8_v2 + c_demo_6_v2 + weekend + (1\|ParticipantID)
 
-**Sleep Environment Model**: response \~ c_se_12_v2 + c_se_8_v2 + c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend + (1\|ParticipantID)
-
-## Daily
+## Daily Variables
 
 ### Sleep Duration (C_ACTI_SleepTime)
 
 ```{r}
-library(lme4)
-library(lmerTest)
 # Neighborhood Factors: Do I include COI_3.0 or just the subdomains?
-nbhd_dur <- lmer(C_ACTI_SleepTime ~ geo_COI_3.0 + geo_COI_ED_3.0 + geo_COI_HE_3.0 +
-                   geo_COI_SE_3.0 + c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend +
-                   (1|ParticipantID), data = models)
+nbhd_dur <- lmer(C_ACTI_SleepTime ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
+                   weekend + (1|ParticipantID), data = models)
 summary(nbhd_dur)
 confint(nbhd_dur)
 
+plot(nbhd_dur, type=c("p","smooth"), col.line=1)
+
+plot(nbhd_dur,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(nbhd_dur)
+
 # Family Factors
-fmly_dur <- lmer(C_ACTI_SleepTime ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS +
-                   c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend + (1|ParticipantID),
+fmly_dur <- lmer(C_ACTI_SleepTime ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + 
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID),
                  data = models)
 summary(fmly_dur)
 confint(fmly_dur)
 
-# Sleep Environment Factors
-senv_dur <- lmer(C_ACTI_SleepTime ~ c_se_12_v2 + c_se_8_v2 + c_demo_8_v2 +
-                   c_demo_6_v2 + Day_Type + weekend + (1|ParticipantID), data = models)
+plot(fmly_dur, type=c("p","smooth"), col.line=1)
 
-summary(senv_dur)
-confint(senv_dur)
+plot(fmly_dur,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(fmly_dur)
 ```
 
 ### Offset/Waketime (C_ACTI_WT_DEC)
 
 ```{r}
 # Neighborhood
-nbhd_off <- lmer(C_ACTI_WT_DEC ~ geo_COI_3.0 + geo_COI_ED_3.0 + geo_COI_HE_3.0 +
-                   geo_COI_SE_3.0 + c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend +
-                   (1|ParticipantID), data = models)
+nbhd_off <- lmer(C_ACTI_WT_DEC ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
+                   weekend + (1|ParticipantID), data = models)
 summary(nbhd_off)
 confint(nbhd_off)
 
+plot(nbhd_off, type=c("p","smooth"), col.line=1)
+
+plot(nbhd_off,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(nbhd_off)
+
 # Family
 fmly_off <- lmer(C_ACTI_WT_DEC ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS +
-                   c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend + (1|ParticipantID),
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID),
                  data = models)
 summary(fmly_off)
 confint(fmly_off)
 
-# Sleep Environment
-senv_off <- lmer(C_ACTI_WT_DEC ~ c_se_12_v2 + c_se_8_v2 + c_demo_8_v2 + c_demo_6_v2 + 
-                   Day_Type + weekend + (1|ParticipantID), data = models)
-summary(senv_off)
-confint(senv_off)
+plot(fmly_off, type=c("p","smooth"), col.line=1)
+
+plot(fmly_off,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(fmly_off)
 ```
 
 ### Onset/Falling Asleep Time (C_ACTI_SOL)
 
 ```{r}
 # Neighborhood
-nbhd_on <- lmer(C_ACTI_SOL ~ geo_COI_3.0 + geo_COI_ED_3.0 + geo_COI_HE_3.0 +
-                   geo_COI_SE_3.0 + c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend +
-                   (1|ParticipantID), data = models)
+nbhd_on <- lmer(log(C_ACTI_SOL+1) ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
+                   weekend + (1|ParticipantID), data = models)
 summary(nbhd_on)
 confint(nbhd_on)
 
+plot(nbhd_on, type=c("p","smooth"), col.line=1)
+
+plot(nbhd_on,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(nbhd_on)
+
 # Family
-fmly_on <- lmer(C_ACTI_SOL ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS +
-                   c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend + (1|ParticipantID),
+fmly_on <- lmer(log(C_ACTI_SOL+1) ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS +
+                  c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID),
                  data = models)
 summary(fmly_on)
 confint(fmly_on)
 
-# Sleep Environment
-senv_on <- lmer(C_ACTI_SOL ~ c_se_12_v2 + c_se_8_v2 + c_demo_8_v2 + c_demo_6_v2 + 
-                   Day_Type + weekend + (1|ParticipantID), data = models)
-summary(senv_on)
-confint(senv_on)
+plot(fmly_on, type=c("p","smooth"), col.line=1)
+
+plot(fmly_on,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(fmly_on)
+
 ```
 
 ### Efficiency (C_ACTI_Efficiency)
 
 ```{r}
 # Neighborhood
-nbhd_eff <- lmer(C_ACTI_Efficiency ~ geo_COI_3.0 + geo_COI_ED_3.0 + geo_COI_HE_3.0 +
-                   geo_COI_SE_3.0 + c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend +
-                   (1|ParticipantID), data = models)
+nbhd_eff <- lmer(C_ACTI_Efficiency ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
+                   weekend + (1|ParticipantID), data = models)
 summary(nbhd_eff)
 confint(nbhd_eff)
 
+plot(nbhd_eff, type=c("p","smooth"), col.line=1)
+
+plot(nbhd_eff,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(nbhd_eff)
+
 # Family
 fmly_eff <- lmer(C_ACTI_Efficiency ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS +
-                   c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend + (1|ParticipantID),
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID),
                  data = models)
 summary(fmly_eff)
 confint(fmly_eff)
 
-# Sleep Environment
-senv_eff <- lmer(C_ACTI_Efficiency ~ c_se_12_v2 + c_se_8_v2 + c_demo_8_v2 + 
-                  c_demo_6_v2 + Day_Type + weekend + (1|ParticipantID), data = models)
-summary(senv_eff)
-confint(senv_eff)
+plot(fmly_eff, type=c("p","smooth"), col.line=1)
+
+plot(fmly_eff,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(fmly_eff)
 ```
 
 ## Weekly Variables
@@ -255,83 +290,69 @@ confint(senv_eff)
 weekly <- models %>% filter(merge_study_day == 1)
 
 # Neighborhood
-nbhd_dursd <- lm(C_ACTI_SleepTime_sd ~ geo_COI_3.0 + geo_COI_ED_3.0 + 
-                     geo_COI_HE_3.0 + geo_COI_SE_3.0 + c_demo_8_v2 + c_demo_6_v2 +
-                     Day_Type + weekend, data = weekly)
+nbhd_dursd <- lm(C_ACTI_SleepTime_sd ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
+                   weekend, data = weekly)
 summary(nbhd_dursd)
 confint(nbhd_dursd)
 
+plot(nbhd_dursd, 1)
+plot(nbhd_dursd, 2)
+
 # Family
-fmly_dursd <- lm(C_ACTI_SleepTime_sd ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS +
-                   c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend, data = weekly)
+fmly_dursd <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + weekend +
+                   P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
 summary(fmly_dursd)
 confint(fmly_dursd)
 
-# Sleep Environment
-senv_dursd <- lm(C_ACTI_SleepTime_sd ~ c_se_12_v2 + c_se_8_v2 + c_demo_8_v2 +
-                   c_demo_6_v2 + Day_Type + weekend, data = weekly)
-summary(senv_dursd)
-confint(senv_dursd)
+plot(fmly_dursd, 1)
+plot(fmly_dursd, 2)
 ```
 
 ### Offset Variation (C_ACTI_WT_DEC_sd)
 
 ```{r}
 # Neighborhood
-nbhd_offsd <- lm(C_ACTI_WT_DEC_sd ~ geo_COI_3.0 + geo_COI_ED_3.0 + geo_COI_HE_3.0 +
-                   geo_COI_SE_3.0 + c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend,
-                 data = weekly)
+nbhd_offsd <- lm(C_ACTI_WT_DEC_sd ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
+                   weekend, data = weekly)
+
 summary(nbhd_offsd)
 confint(nbhd_offsd)
 
+plot(nbhd_offsd, 1)
+plot(nbhd_offsd, 2)
+
 # Family
-fmly_offsd <- lm(C_ACTI_WT_DEC_sd ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS +
-                   c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend, data = weekly)
+fmly_offsd <- lm(C_ACTI_WT_DEC_sd ~ c_demo_8_v2 + c_demo_6_v2 + weekend +
+                   P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
 summary(fmly_offsd)
 confint(fmly_offsd)
 
-# Sleep Environment
-senv_offsd <- lm(C_ACTI_WT_DEC_sd ~ c_se_12_v2 + c_se_8_v2 + c_demo_8_v2 +
-                   c_demo_6_v2 + Day_Type + weekend, data = weekly)
-summary(senv_offsd)
-confint(senv_offsd)
+plot(fmly_offsd, 1)
+plot(fmly_offsd, 2)
 ```
 
 ### Onset Variation (C_ACTI_SleepOnsetTime_TRM_sd)
 
 ```{r}
 # Neighborhood
-nbhd_onsd <- lm(C_ACTI_SleepOnsetTime_TRM_sd ~ geo_COI_3.0 + geo_COI_ED_3.0 +
-                  geo_COI_HE_3.0 + geo_COI_SE_3.0 + c_demo_8_v2 + c_demo_6_v2 +
-                  Day_Type + weekend, data = weekly)
+nbhd_onsd <- lm(C_ACTI_SleepOnsetTime_TRM_sd ~ geo_COI_3.0 + c_demo_8_v2 + 
+                  c_demo_6_v2 + weekend, data = weekly)
 summary(nbhd_onsd)
 confint(nbhd_onsd)
 
+plot(nbhd_onsd, 1)
+plot(nbhd_onsd, 2)
+
 # Family 
-fmly_onsd <- lm(C_ACTI_SleepOnsetTime_TRM_sd ~ P_COHESION + C_MESA_FT + C_MESA_ES +
-                  C_CHAOS + c_demo_8_v2 + c_demo_6_v2 + Day_Type + weekend, 
+fmly_onsd <- lm(C_ACTI_SleepOnsetTime_TRM_sd ~ c_demo_8_v2 + c_demo_6_v2 + weekend +
+                   P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, 
                 data = weekly)
 summary(fmly_onsd)
 confint(fmly_onsd)
 
-# Sleep Environment
-senv_onsd <- lm(C_ACTI_SleepOnsetTime_TRM_sd ~ c_se_12_v2 + c_se_8_v2 + c_demo_8_v2 +
-                   c_demo_6_v2 + Day_Type + weekend, data = weekly)
-summary(senv_onsd)
-confint(senv_onsd)
+plot(fmly_onsd, 1)
+plot(fmly_onsd, 2)
 ```
-
-# Oliver Notes (3/30)
-
-## Questions
-
-For the Neighborhood models, do I include COI_3.0 (seems like the overall variable) as the only neighborhood exp. variable or the domains?
-
-- Josie: last time we ran this analysis, we took out this variable because the subdomains covered it.
-
-I'm generally confused re: the differences between the "Daily", "Weekly", and "Weekend" models. Why is the weekly dataset only the first day of the study? Am I missing something here?
-
-- Josie: weekly models predict variation in the response variables. idk why weekend is included bc we filtered to first day bc the variables are from the survey data (meaning they don't change day-to-day).
 
 ## Comments
 
