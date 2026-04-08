@@ -301,7 +301,7 @@ ii. None
 
 <!-- -->
 
-2.  Offset/Waketime (C_ACTI_WT_DEC) 
+2.  Offset/Waketime (C_ACTI_WT_DEC)
 
 -   no transformation
 
@@ -346,14 +346,12 @@ ii. MESA_ES has positive coefficient (23.173, CI: 1.599, 44.747)
 
 <!-- -->
 
-7.  Offset Variability (C_ACTI_WT_DEC_sd) 
+7.  Offset Variability (C_ACTI_WT_DEC_sd)
 
 -   no log transformation (but could do it)
 
 i.  geo_COI_3.0 has negative coefficient (-0.52009, CI: -0.9615, -0.07869)
 ii. None
-
-
 
 (C_ACTI_WakeTime (not using): C_MESA_ES has positive coefficient (11.39, CI: 6.074, 16.706). CHAOS has a negative coefficient (-11.972, CI: -20.200, -3.745).)
 
@@ -364,15 +362,15 @@ ii. None
 -   no log transformation (but could do it)
 
 i.  None
-ii. MESA_ES has positive coefficient (0.641, CI: 0.3089, 0.9721). 
+ii. MESA_ES has positive coefficient (0.641, CI: 0.3089, 0.9721).
 
 ### Changes 9/2
 
-- take out model 3
-- take out awakenings model
-- take out daytype (school/summer) covariate in each model
-- do coi total in model 1
-- write up what actually exists
+-   take out model 3
+-   take out awakenings model
+-   take out daytype (school/summer) covariate in each model
+-   do coi total in model 1
+-   write up what actually exists
 
 \newpage
 

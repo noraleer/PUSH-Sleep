@@ -1,0 +1,363 @@
+---
+title: "Updated PUSH Sleep and Neighborhood Effects"
+author: "Josie Peterburs and Oliver Schramm"
+date: today
+format: html
+editor: visual
+---
+
+# Data Cleaning
+
+```{r message = FALSE, warning=FALSE}
+library(corrplot)
+library(tidyverse)
+library(lme4)
+library(lmerTest)
+
+# diary and actigraphy data
+push_long <- read_csv("PUSH_long_acti_diary_3.23.2026.csv") %>% 
+  rename(ParticipantID = 'Global Participant ID')
+
+# survey data
+push_wide <- read_csv("PUSH_actigraph_survey_geo_wide_8.7.25.csv")
+```
+
+### Merge Datasets
+
+```{r}
+# left join
+all <- left_join(push_long, push_wide, by = "ParticipantID")
+
+# remove people who do not have actigraphy data?
+all <- all %>% filter(Data_Source != 'Diary')
+
+dim(all)
+all %>% group_by(ParticipantID) %>% summarize(days = n()) 
+
+all %>% group_by(ParticipantID) %>% summarize(days = n()) %>% ungroup() %>% group_by(days) %>% summarize(n = n())
+```
+
+## EDA
+
+We began by observing the distribution of the independent variables of interest (dependent variable distributions are observed with their models below).
+
+```{r}
+vars <- all %>% select(ParticipantID, merge_study_day, C_ACTI_Date,
+                         # dependent vars
+                         C_ACTI_SleepTime, 
+                         C_ACTI_WT_DEC, 
+                         C_ACTI_SOL, 
+                         C_ACTI_SleepOnsetTime_TRM, 
+                         C_ACTI_Efficiency, 
+                         C_ACTI_Waso, 
+                         C_ACTI_SleepTime_sd, 
+                         C_ACTI_WT_DEC_sd,
+                         C_ACTI_WakeTime_sd,
+                         C_ACTI_SleepOnsetTime_TRM_sd, 
+                         # covariates
+                         c_demo_8_v2, 
+                         c_demo_6_v2, 
+                         `Day Type`,
+                         #fixed effects
+                         geo_COI_3.0,
+                         geo_COI_ED_3.0,
+                         geo_COI_HE_3.0,
+                         geo_COI_SE_3.0,
+                         P_COHESION,
+                         C_MESA_FT,
+                         C_MESA_ES,
+                         C_CHAOS,
+                         c_se_12_v2,
+                         c_se_8_v2,
+                         c_se_11_v2) %>% 
+  rename(Day_Type = `Day Type`) %>% 
+  mutate(c_demo_8_v2 = as.factor(c_demo_8_v2),
+         Day_Type = as.factor(Day_Type),
+         c_se_12_v2 = as.factor(c_se_12_v2),
+         c_se_8_v2 = as.factor(c_se_8_v2),
+         c_se_11_v2 = as.factor(c_se_11_v2))
+```
+
+### Fix Covariates
+
+Fixed school year so people labeled '7' are labeled as '8'.
+
+Added weekend variable.
+
+```{r}
+# c_demo_8_v2 -- Biological Sex
+# MALE (1), FEMALE (2), DON’T KNOW (3), PREFER NOT TO ANSWER (4)
+table(vars$c_demo_8_v2, useNA = "always")
+
+# c_demo_6_v2 -- Grade in School
+# 8th (1), 9th (2), 10th (3), 11th (4), 12th (5)
+table(vars$c_demo_6_v2, useNA = "always")
+all %>% filter(c_demo_6_v2 == 7) %>% select(c_demo_6_v2, c_demo_2_v2)
+
+model <- vars %>% mutate(c_demo_6_v2 = case_when(
+  c_demo_6_v2 == 1 ~ 8,
+  c_demo_6_v2 == 2 ~ 9,
+  c_demo_6_v2 == 3 ~ 10,
+  c_demo_6_v2 == 4 ~ 11,
+  c_demo_6_v2 == 5 ~ 12,
+  c_demo_6_v2 == 7 ~ 8))
+table(model$c_demo_6_v2, useNA = "always")
+
+# C_DD_PM_DayType -- School or Summer
+# Summer (0), Academic School Year (1)
+table(model$Day_Type)
+
+# add weekend variable
+  # weekend = Friday or Saturday night
+models <- model %>% mutate(weekday = wday(model$C_ACTI_Date, label = TRUE),
+                           weekend = 
+                             case_when(weekday == 'Fri' | weekday == 'Sat' ~ 1,
+                                       .default = 0))
+```
+
+### Fix Sleep Variables
+
+The three sleep environment variables are sleep disruptions, sleep quiet, and sleep dark. Notably, sleep dark is true for all individuals except for one. Because only one person does not have a dark sleep environment, this variable cannot be used in the models.
+
+```{r}
+# c_se_12_v2 -- sleep disruptions
+# YES (1), NO (2)
+table(models$c_se_12_v2, useNA = "always")
+
+# c_se_8_v2 -- sleep quiet
+# YES (1), NO (2)
+table(models$c_se_8_v2, useNA = "always")
+
+# # c_se_11_v2 -- sleep dark
+# YES (1), NO (2)
+table(models$c_se_11_v2, useNA = "always")
+```
+
+\newpage
+
+# Models
+
+We are interested in 7 dependent variables: sleep duration, offset/waketime, onset/falling asleep time, efficiency, duration variability, offset variation, and onset variation. 
+
+There are 2 models for each dependent variable. The first model includes neighborhood factors (COI domains) and the second model includes family factors (family cohesion, MESA variables, and CHAOS).
+
+Each model also includes covariates: sex, grade, and whether the study day was a weekend (Friday or Saturday night). The levels in the grade in school variable were renamed to reflect the number of the grade. An individual also had grade level 7, which was not defined on the scale. Because the individual was 13, we put them into grade level 1, which is 8th grade.
+
+**Neighborhood Model**: response \~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + weekend + (1\|ParticipantID)
+
+**Family Model:** response \~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + c_demo_8_v2 + c_demo_6_v2 + weekend + (1\|ParticipantID)
+
+## Daily Variables
+
+### Sleep Duration (C_ACTI_SleepTime)
+
+```{r}
+# Neighborhood Factors: Do I include COI_3.0 or just the subdomains?
+nbhd_dur <- lmer(C_ACTI_SleepTime ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
+                   weekend + (1|ParticipantID), data = models)
+summary(nbhd_dur)
+confint(nbhd_dur)
+
+plot(nbhd_dur, type=c("p","smooth"), col.line=1)
+
+plot(nbhd_dur,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(nbhd_dur)
+
+# Family Factors
+fmly_dur <- lmer(C_ACTI_SleepTime ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + 
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID),
+                 data = models)
+summary(fmly_dur)
+confint(fmly_dur)
+
+plot(fmly_dur, type=c("p","smooth"), col.line=1)
+
+plot(fmly_dur,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(fmly_dur)
+```
+
+### Offset/Waketime (C_ACTI_WT_DEC)
+
+```{r}
+# Neighborhood
+nbhd_off <- lmer(C_ACTI_WT_DEC ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
+                   weekend + (1|ParticipantID), data = models)
+summary(nbhd_off)
+confint(nbhd_off)
+
+plot(nbhd_off, type=c("p","smooth"), col.line=1)
+
+plot(nbhd_off,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(nbhd_off)
+
+# Family
+fmly_off <- lmer(C_ACTI_WT_DEC ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS +
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID),
+                 data = models)
+summary(fmly_off)
+confint(fmly_off)
+
+plot(fmly_off, type=c("p","smooth"), col.line=1)
+
+plot(fmly_off,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(fmly_off)
+```
+
+### Onset/Falling Asleep Time (C_ACTI_SOL)
+
+```{r}
+# Neighborhood
+nbhd_on <- lmer(log(C_ACTI_SOL+1) ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
+                   weekend + (1|ParticipantID), data = models)
+summary(nbhd_on)
+confint(nbhd_on)
+
+plot(nbhd_on, type=c("p","smooth"), col.line=1)
+
+plot(nbhd_on,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(nbhd_on)
+
+# Family
+fmly_on <- lmer(log(C_ACTI_SOL+1) ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS +
+                  c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID),
+                 data = models)
+summary(fmly_on)
+confint(fmly_on)
+
+plot(fmly_on, type=c("p","smooth"), col.line=1)
+
+plot(fmly_on,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(fmly_on)
+
+```
+
+### Efficiency (C_ACTI_Efficiency)
+
+```{r}
+# Neighborhood
+nbhd_eff <- lmer(C_ACTI_Efficiency ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
+                   weekend + (1|ParticipantID), data = models)
+summary(nbhd_eff)
+confint(nbhd_eff)
+
+plot(nbhd_eff, type=c("p","smooth"), col.line=1)
+
+plot(nbhd_eff,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(nbhd_eff)
+
+# Family
+fmly_eff <- lmer(C_ACTI_Efficiency ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS +
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID),
+                 data = models)
+summary(fmly_eff)
+confint(fmly_eff)
+
+plot(fmly_eff, type=c("p","smooth"), col.line=1)
+
+plot(fmly_eff,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(fmly_eff)
+```
+
+## Weekly Variables
+
+### Duration Variability (C_ACTI_SleepTime_sd)
+
+```{r}
+weekly <- models %>% filter(merge_study_day == 1)
+
+# Neighborhood
+nbhd_dursd <- lm(C_ACTI_SleepTime_sd ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
+                   weekend, data = weekly)
+summary(nbhd_dursd)
+confint(nbhd_dursd)
+
+plot(nbhd_dursd, 1)
+plot(nbhd_dursd, 2)
+
+# Family
+fmly_dursd <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + weekend +
+                   P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
+summary(fmly_dursd)
+confint(fmly_dursd)
+
+plot(fmly_dursd, 1)
+plot(fmly_dursd, 2)
+```
+
+### Offset Variation (C_ACTI_WT_DEC_sd)
+
+```{r}
+# Neighborhood
+nbhd_offsd <- lm(C_ACTI_WT_DEC_sd ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
+                   weekend, data = weekly)
+
+summary(nbhd_offsd)
+confint(nbhd_offsd)
+
+plot(nbhd_offsd, 1)
+plot(nbhd_offsd, 2)
+
+# Family
+fmly_offsd <- lm(C_ACTI_WT_DEC_sd ~ c_demo_8_v2 + c_demo_6_v2 + weekend +
+                   P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
+summary(fmly_offsd)
+confint(fmly_offsd)
+
+plot(fmly_offsd, 1)
+plot(fmly_offsd, 2)
+```
+
+### Onset Variation (C_ACTI_SleepOnsetTime_TRM_sd)
+
+```{r}
+# Neighborhood
+nbhd_onsd <- lm(C_ACTI_SleepOnsetTime_TRM_sd ~ geo_COI_3.0 + c_demo_8_v2 + 
+                  c_demo_6_v2 + weekend, data = weekly)
+summary(nbhd_onsd)
+confint(nbhd_onsd)
+
+plot(nbhd_onsd, 1)
+plot(nbhd_onsd, 2)
+
+# Family 
+fmly_onsd <- lm(C_ACTI_SleepOnsetTime_TRM_sd ~ c_demo_8_v2 + c_demo_6_v2 + weekend +
+                   P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, 
+                data = weekly)
+summary(fmly_onsd)
+confint(fmly_onsd)
+
+plot(fmly_onsd, 1)
+plot(fmly_onsd, 2)
+```
+
+## Comments
+
+### Coef Significance/Confidence Intervals
+
+Without getting specific, a lot of these models look capital B bad. The only ones that seemed to have any significance were the family factor models. A lot of this stuff was consistent throughout each model, though, so there is still a story to be told.
+
+# Model Analysis Summary
