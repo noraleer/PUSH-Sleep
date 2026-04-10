@@ -29,7 +29,7 @@ push_wide <- read_csv("PUSH_actigraph_survey_geo_wide_8.7.25.csv")
 all <- left_join(push_long, push_wide, by = "ParticipantID")
 
 # remove people who do not have actigraphy data?
-all <- all %>% filter(Data_Source != 'Diary')
+# all <- all %>% filter(Data_Source != 'Diary')
 
 dim(all)
 all %>% group_by(ParticipantID) %>% summarize(days = n()) 
@@ -54,6 +54,7 @@ vars <- all %>% select(ParticipantID, merge_study_day, C_ACTI_Date,
                          C_ACTI_WT_DEC_sd,
                          C_ACTI_WakeTime_sd,
                          C_ACTI_SleepOnsetTime_TRM_sd, 
+                         `Sleep Quality`,
                          # covariates
                          c_demo_8_v2, 
                          c_demo_6_v2, 
@@ -70,7 +71,8 @@ vars <- all %>% select(ParticipantID, merge_study_day, C_ACTI_Date,
                          c_se_12_v2,
                          c_se_8_v2,
                          c_se_11_v2) %>% 
-  rename(Day_Type = `Day Type`) %>% 
+  rename(Day_Type = `Day Type`,
+         Sleep_Quality = `Sleep Quality`) %>% 
   mutate(c_demo_8_v2 = as.factor(c_demo_8_v2),
          Day_Type = as.factor(Day_Type),
          c_se_12_v2 = as.factor(c_se_12_v2),
@@ -105,7 +107,7 @@ table(model$c_demo_6_v2, useNA = "always")
 
 # C_DD_PM_DayType -- School or Summer
 # Summer (0), Academic School Year (1)
-table(model$Day_Type)
+table(model$Day_Type, useNA = "always")
 
 # add weekend variable
   # weekend = Friday or Saturday night
@@ -137,15 +139,11 @@ table(models$c_se_11_v2, useNA = "always")
 
 # Models
 
-#### Changes 9/2
+#### Changes 4/9
 
-- take out model 3
+- add sleep quality model
 
-- take out awakenings model
-
-- take out daytype (school/summer) covariate in each model
-
-- do coi total in model 1
+- PUT BACK IN daytype (school/summer) covariate in each model
 
 We are interested in 7 dependent variables: sleep duration, offset/waketime, onset/falling asleep time, efficiency, duration variability, offset variation, and onset variation. 
 
@@ -290,6 +288,39 @@ plot(fmly_eff,
      type=c("p","smooth"), col.line=1)
 
 lattice::qqmath(fmly_eff)
+```
+
+### Sleep Quality (C_ACTI_Efficiency)
+
+```{r}
+# Neighborhood
+nbhd_qual <- lmer(Sleep_Quality ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
+                   weekend + (1|ParticipantID), data = models)
+summary(nbhd_qual)
+confint(nbhd_qual)
+
+plot(nbhd_qual, type=c("p","smooth"), col.line=1)
+
+plot(nbhd_qual,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(nbhd_qual)
+
+# Family
+fmly_qual <- lmer(Sleep_Quality ~ P_COHESION + C_MESA_FT + C_MESA_ES + 
+                    C_CHAOS + c_demo_8_v2 + c_demo_6_v2 + weekend +
+                    (1|ParticipantID), data = models)
+summary(fmly_qual)
+confint(fmly_qual)
+
+plot(fmly_qual, type=c("p","smooth"), col.line=1)
+
+plot(fmly_qual,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(fmly_qual)
 ```
 
 ## Weekly Variables
@@ -489,6 +520,26 @@ plot(nbhd_eff,
 
 lattice::qqmath(nbhd_eff)
 ```
+
+#### Sleep Quality - nothing
+
+```{r}
+nbhd_qual <- lmer(Sleep_Quality ~ geo_COI_ED_3.0 + geo_COI_HE_3.0 +
+                    geo_COI_SE_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
+                    weekend + (1|ParticipantID), data = models)
+summary(nbhd_qual)
+confint(nbhd_qual)
+vif(nbhd_qual)
+
+plot(nbhd_qual, type=c("p","smooth"), col.line=1)
+
+plot(nbhd_qual,
+     sqrt(abs(resid(.)))~fitted(.),
+     type=c("p","smooth"), col.line=1)
+
+lattice::qqmath(nbhd_qual)
+```
+
 
 #### Duration Variability - Nothing
 
