@@ -13,6 +13,7 @@ library(corrplot)
 library(tidyverse)
 library(lme4)
 library(lmerTest)
+library(lubridate)
 
 # diary and actigraphy data
 push_long <- read_csv("PUSH_long_acti_diary_3.23.2026.csv") %>% 
@@ -135,6 +136,45 @@ table(models$c_se_8_v2, useNA = "always")
 table(models$c_se_11_v2, useNA = "always")
 ```
 
+### Add School/Summer Variable
+
+Dates in this dataset are between November 2022 and March 2024.
+
+```{r}
+# change date to date type
+models <- models %>% 
+  mutate(C_ACTI_Date = as_date(C_ACTI_Date))
+
+# Create school period variable 
+models <- models %>% 
+  mutate( 
+    SchoolPeriod = case_when( 
+      # ------------------------- 
+      # 2022–2023 Academic Year 
+      # ------------------------- 
+      C_ACTI_Date >= ymd("2022-08-22") & C_ACTI_Date <= ymd("2023-06-07") ~ 1, 
+      C_ACTI_Date >= ymd("2023-06-08") & C_ACTI_Date <= ymd("2023-08-20") ~ 0, 
+      C_ACTI_Date >= ymd("2022-12-26") & C_ACTI_Date <= ymd("2023-01-06") ~ 3, 
+      C_ACTI_Date >= ymd("2023-04-03") & C_ACTI_Date <= ymd("2023-04-07") ~ 4, 
+
+      # ------------------------- 
+      # 2023–2024 Academic Year 
+      # ------------------------- 
+      C_ACTI_Date >= ymd("2023-08-21") & C_ACTI_Date <= ymd("2024-06-06") ~ 1, 
+      C_ACTI_Date >= ymd("2024-06-07") & C_ACTI_Date <= ymd("2024-08-18") ~ 0, 
+      C_ACTI_Date >= ymd("2023-12-25") & C_ACTI_Date <= ymd("2024-01-05") ~ 3, 
+      C_ACTI_Date >= ymd("2024-03-25") & C_ACTI_Date <= ymd("2024-03-29") ~ 4, 
+      TRUE ~ NA_real_ 
+    ) 
+  ) 
+
+# quick check of the new variable 
+table(models$SchoolPeriod, useNA = "ifany") 
+
+# no spring or winter break values so we do not need to worry about this
+```
+
+
 \newpage
 
 # Models
@@ -160,9 +200,9 @@ Each model also includes covariates: sex, grade, and whether the study day was a
 ### Sleep Duration (C_ACTI_SleepTime)
 
 ```{r}
-# Neighborhood Factors: Do I include COI_3.0 or just the subdomains?
+# Neighborhood Factors
 nbhd_dur <- lmer(C_ACTI_SleepTime ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
-                   weekend + (1|ParticipantID), data = models)
+                   weekend + SchoolPeriod + (1|ParticipantID), data = models)
 summary(nbhd_dur)
 confint(nbhd_dur)
 
@@ -176,7 +216,8 @@ lattice::qqmath(nbhd_dur)
 
 # Family Factors
 fmly_dur <- lmer(C_ACTI_SleepTime ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + 
-                   c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID),
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + SchoolPeriod + 
+                   (1|ParticipantID),
                  data = models)
 summary(fmly_dur)
 confint(fmly_dur)
@@ -195,7 +236,7 @@ lattice::qqmath(fmly_dur)
 ```{r}
 # Neighborhood
 nbhd_off <- lmer(C_ACTI_WT_DEC ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
-                   weekend + (1|ParticipantID), data = models)
+                   weekend + SchoolPeriod + (1|ParticipantID), data = models)
 summary(nbhd_off)
 confint(nbhd_off)
 
@@ -209,7 +250,8 @@ lattice::qqmath(nbhd_off)
 
 # Family
 fmly_off <- lmer(C_ACTI_WT_DEC ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS +
-                   c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID),
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + SchoolPeriod +
+                   (1|ParticipantID),
                  data = models)
 summary(fmly_off)
 confint(fmly_off)
@@ -228,7 +270,7 @@ lattice::qqmath(fmly_off)
 ```{r}
 # Neighborhood
 nbhd_on <- lmer(log(C_ACTI_SOL+1) ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
-                   weekend + (1|ParticipantID), data = models)
+                   weekend + SchoolPeriod + (1|ParticipantID), data = models)
 summary(nbhd_on)
 confint(nbhd_on)
 
@@ -242,7 +284,8 @@ lattice::qqmath(nbhd_on)
 
 # Family
 fmly_on <- lmer(log(C_ACTI_SOL+1) ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS +
-                  c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID),
+                  c_demo_8_v2 + c_demo_6_v2 + weekend + SchoolPeriod +
+                  (1|ParticipantID),
                  data = models)
 summary(fmly_on)
 confint(fmly_on)
@@ -262,7 +305,7 @@ lattice::qqmath(fmly_on)
 ```{r}
 # Neighborhood
 nbhd_eff <- lmer(C_ACTI_Efficiency ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
-                   weekend + (1|ParticipantID), data = models)
+                   weekend + SchoolPeriod + (1|ParticipantID), data = models)
 summary(nbhd_eff)
 confint(nbhd_eff)
 
@@ -276,7 +319,8 @@ lattice::qqmath(nbhd_eff)
 
 # Family
 fmly_eff <- lmer(C_ACTI_Efficiency ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS +
-                   c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID),
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + SchoolPeriod + 
+                   (1|ParticipantID),
                  data = models)
 summary(fmly_eff)
 confint(fmly_eff)
@@ -295,7 +339,7 @@ lattice::qqmath(fmly_eff)
 ```{r}
 # Neighborhood
 nbhd_qual <- lmer(Sleep_Quality ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
-                   weekend + (1|ParticipantID), data = models)
+                   weekend + SchoolPeriod + (1|ParticipantID), data = models)
 summary(nbhd_qual)
 confint(nbhd_qual)
 
@@ -308,9 +352,10 @@ plot(nbhd_qual,
 lattice::qqmath(nbhd_qual)
 
 # Family
-fmly_qual <- lmer(Sleep_Quality ~ P_COHESION + C_MESA_FT + C_MESA_ES + 
-                    C_CHAOS + c_demo_8_v2 + c_demo_6_v2 + weekend +
-                    (1|ParticipantID), data = models)
+fmly_qual <- lmer(Sleep_Quality ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + 
+                    c_demo_8_v2 + c_demo_6_v2 + weekend + SchoolPeriod +
+                    (1|ParticipantID), 
+                  data = models)
 summary(fmly_qual)
 confint(fmly_qual)
 
@@ -332,7 +377,7 @@ weekly <- models %>% filter(merge_study_day == 1)
 
 # Neighborhood
 nbhd_dursd <- lm(C_ACTI_SleepTime_sd ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
-                   weekend, data = weekly)
+                   weekend + SchoolPeriod, data = weekly)
 summary(nbhd_dursd)
 confint(nbhd_dursd)
 
@@ -341,7 +386,8 @@ plot(nbhd_dursd, 2)
 
 # Family
 fmly_dursd <- lm(C_ACTI_SleepTime_sd ~ c_demo_8_v2 + c_demo_6_v2 + weekend +
-                   P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
+                   P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + SchoolPeriod, 
+                 data = weekly)
 summary(fmly_dursd)
 confint(fmly_dursd)
 
@@ -354,7 +400,7 @@ plot(fmly_dursd, 2)
 ```{r}
 # Neighborhood
 nbhd_offsd <- lm(C_ACTI_WT_DEC_sd ~ geo_COI_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
-                   weekend, data = weekly)
+                   weekend + SchoolPeriod, data = weekly)
 
 summary(nbhd_offsd)
 confint(nbhd_offsd)
@@ -364,7 +410,8 @@ plot(nbhd_offsd, 2)
 
 # Family
 fmly_offsd <- lm(C_ACTI_WT_DEC_sd ~ c_demo_8_v2 + c_demo_6_v2 + weekend +
-                   P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, data = weekly)
+                   P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + SchoolPeriod,
+                 data = weekly)
 summary(fmly_offsd)
 confint(fmly_offsd)
 
@@ -377,7 +424,7 @@ plot(fmly_offsd, 2)
 ```{r}
 # Neighborhood
 nbhd_onsd <- lm(C_ACTI_SleepOnsetTime_TRM_sd ~ geo_COI_3.0 + c_demo_8_v2 + 
-                  c_demo_6_v2 + weekend, data = weekly)
+                  c_demo_6_v2 + weekend + SchoolPeriod, data = weekly)
 summary(nbhd_onsd)
 confint(nbhd_onsd)
 
@@ -386,7 +433,7 @@ plot(nbhd_onsd, 2)
 
 # Family 
 fmly_onsd <- lm(C_ACTI_SleepOnsetTime_TRM_sd ~ c_demo_8_v2 + c_demo_6_v2 + weekend +
-                   P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS, 
+                   P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + SchoolPeriod, 
                 data = weekly)
 summary(fmly_onsd)
 confint(fmly_onsd)
@@ -454,7 +501,8 @@ plot(fmly_onsd, 2)
 ```{r}
 library(car)
 nbhd_dur <- lmer(C_ACTI_SleepTime ~ geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + 
-                   c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID), data = models)
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + SchoolPeriod +(1|ParticipantID),
+                 data = models)
 
 summary(nbhd_dur)
 confint(nbhd_dur)
@@ -471,7 +519,8 @@ lattice::qqmath(nbhd_dur)
 
 ```{r}
 nbhd_off <- lmer(C_ACTI_WT_DEC ~ geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + 
-                   c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID), data = models)
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + SchoolPeriod + (1|ParticipantID),
+                 data = models)
 summary(nbhd_off)
 confint(nbhd_off)
 vif(nbhd_off)
@@ -489,7 +538,8 @@ lattice::qqmath(nbhd_off)
 
 ```{r}
 nbhd_on <- lmer(log(C_ACTI_SOL+1) ~ geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + 
-                   c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID), data = models)
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + SchoolPeriod + (1|ParticipantID),
+                data = models)
 summary(nbhd_on)
 confint(nbhd_on)
 vif(nbhd_on)
@@ -507,7 +557,8 @@ lattice::qqmath(nbhd_on)
 
 ```{r}
 nbhd_eff <- lmer(C_ACTI_Efficiency ~ geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + 
-                   c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID), data = models)
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + SchoolPeriod + (1|ParticipantID),
+                 data = models)
 summary(nbhd_eff)
 confint(nbhd_eff)
 vif(nbhd_eff)
@@ -526,7 +577,7 @@ lattice::qqmath(nbhd_eff)
 ```{r}
 nbhd_qual <- lmer(Sleep_Quality ~ geo_COI_ED_3.0 + geo_COI_HE_3.0 +
                     geo_COI_SE_3.0 + c_demo_8_v2 + c_demo_6_v2 + 
-                    weekend + (1|ParticipantID), data = models)
+                    weekend + SchoolPeriod + (1|ParticipantID), data = models)
 summary(nbhd_qual)
 confint(nbhd_qual)
 vif(nbhd_qual)
@@ -545,7 +596,8 @@ lattice::qqmath(nbhd_qual)
 
 ```{r}
 nbhd_dursd <- lm(C_ACTI_SleepTime_sd ~  geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + 
-                   c_demo_8_v2 + c_demo_6_v2 + weekend, data = weekly)
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + SchoolPeriod, 
+                 data = weekly)
 
 summary(nbhd_dursd)
 confint(nbhd_dursd)
@@ -559,7 +611,8 @@ plot(nbhd_dursd, 2)
 
 ```{r}
 nbhd_offsd <- lm(C_ACTI_WT_DEC_sd ~ geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + 
-                   c_demo_8_v2 + c_demo_6_v2 + weekend, data = weekly)
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + SchoolPeriod, 
+                 data = weekly)
 
 summary(nbhd_offsd)
 confint(nbhd_offsd)
@@ -573,8 +626,9 @@ plot(nbhd_offsd, 2)
 
 ```{r}
 # Neighborhood
-nbhd_onsd <- lm(C_ACTI_SleepOnsetTime_TRM_sd ~ geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + 
-                   c_demo_8_v2 + c_demo_6_v2 + weekend, data = weekly)
+nbhd_onsd <- lm(C_ACTI_SleepOnsetTime_TRM_sd ~ geo_COI_ED_3.0 + geo_COI_HE_3.0 +
+                  geo_COI_SE_3.0 + c_demo_8_v2 + c_demo_6_v2 + weekend + SchoolPeriod,
+                data = weekly)
 summary(nbhd_onsd)
 confint(nbhd_onsd)
 vif(nbhd_onsd)
