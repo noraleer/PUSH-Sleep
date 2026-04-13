@@ -181,11 +181,11 @@ table(models$SchoolPeriod, useNA = "ifany")
 
 #### Changes 4/9
 
-- add sleep quality model
+-   add sleep quality model
 
-- PUT BACK IN daytype (school/summer) covariate in each model
+-   PUT BACK IN daytype (school/summer) covariate in each model
 
-We are interested in 7 dependent variables: sleep duration, offset/waketime, onset/falling asleep time, efficiency, duration variability, offset variation, and onset variation. 
+We are interested in 7 dependent variables: sleep duration, offset/waketime, onset/falling asleep time, efficiency, duration variability, offset variation, and onset variation.
 
 There are 2 models for each dependent variable. The first model includes neighborhood factors (COI domains) and the second model includes family factors (family cohesion, MESA variables, and CHAOS).
 
@@ -442,59 +442,57 @@ plot(fmly_onsd, 1)
 plot(fmly_onsd, 2)
 ```
 
-
 # Model Analysis Summary
 
 #### Sleep Duration
 
-- nothing
+-   nothing
 
-- domain model: 
+-   domain model:
 
-  - geo_COI_HE_3.0: -71.056 (CI: -120.256, -22.002)
-  
-  - geo_COI_SE_3.0: 67.291 (CI: 28.747, 105.867)
+    -   geo_COI_HE_3.0: -71.056 (CI: -120.256, -22.002)
+
+    -   geo_COI_SE_3.0: 67.291 (CI: 28.747, 105.867)
 
 #### Offset/Waketime
 
-- P_COHESION (p-value: 0.083): -0.750 (CI: -1.458, -0.042)
+-   P_COHESION (p-value: 0.083): -0.750 (CI: -1.458, -0.042)
 
 #### Onset/Falling Asleep
 
-- nothing
+-   nothing
 
 #### Efficiency
 
-- C_MESA_FT: 1.0892 (CI: 0.3695, 1.813)
+-   C_MESA_FT: 1.0892 (CI: 0.3695, 1.813)
 
-- C_MESA_ES: -2.555 (CI: -4.937, -0.1739)
+-   C_MESA_ES: -2.555 (CI: -4.937, -0.1739)
 
-- domain model:
+-   domain model:
 
-  - geo_COI_HE_3.0: -7.4118 (CI: -12.434, -2.403)
+    -   geo_COI_HE_3.0: -7.4118 (CI: -12.434, -2.403)
 
 #### Duration Variability
 
-- C_MESA_ES: 23.173 (CI: 1.599, 44.747)
+-   C_MESA_ES: 23.173 (CI: 1.599, 44.747)
 
 #### Offset Variation
 
-- geo_COI_3.0: -0.5201 (CI: -0.9615, -0.0787)
+-   geo_COI_3.0: -0.5201 (CI: -0.9615, -0.0787)
 
-- domain model:
+-   domain model:
 
-  - geo_COI_HE_3.0: 0.8068 (CI: 0.1609, 1.4526)
-  
-  - geo_COI_SE_3.0: -0.7518 (CI: -1.2526, -0.25197)
+    -   geo_COI_HE_3.0: 0.8068 (CI: 0.1609, 1.4526)
+
+    -   geo_COI_SE_3.0: -0.7518 (CI: -1.2526, -0.25197)
 
 #### Onset Variation
 
-- C_MESA_ES: 0.6406 (CI: 0.309, 0.972)
-
+-   C_MESA_ES: 0.6406 (CI: 0.309, 0.972)
 
 # Models with All COI Domains
 
-**Neighborhood Model**: response \~ geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + c_demo_8_v2 + c_demo_6_v2 + weekend + (1|ParticipantID)
+**Neighborhood Model**: response \~ geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + c_demo_8_v2 + c_demo_6_v2 + weekend + (1\|ParticipantID)
 
 #### Duration - geo_COI_HE_3.0 (-71.056) and geo_COI_SE_3.0 (67.291)
 
@@ -591,7 +589,6 @@ plot(nbhd_qual,
 lattice::qqmath(nbhd_qual)
 ```
 
-
 #### Duration Variability - Nothing
 
 ```{r}
@@ -607,7 +604,7 @@ plot(nbhd_dursd, 1)
 plot(nbhd_dursd, 2)
 ```
 
-#### Offset Variability - geo_COI_HE_3.0 (0.8068) and geo_COI_SE_3.0 (-0.7518)  
+#### Offset Variability - geo_COI_HE_3.0 (0.8068) and geo_COI_SE_3.0 (-0.7518)
 
 ```{r}
 nbhd_offsd <- lm(C_ACTI_WT_DEC_sd ~ geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + 
@@ -636,4 +633,3 @@ vif(nbhd_onsd)
 plot(nbhd_onsd, 1)
 plot(nbhd_onsd, 2)
 ```
-
