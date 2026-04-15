@@ -219,10 +219,15 @@ plot(nbhd_dur,
 lattice::qqmath(nbhd_dur)
 
 # Family Factors
+fmly_dur1 <- lmer(C_ACTI_SleepTime ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + 
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + SchoolPeriod + 
+                   (1|ParticipantID),
+                 data = models)
 fmly_dur <- lmer(C_ACTI_SleepTime ~ P_COHESION + C_MESA_FT + C_MESA_ES + C_CHAOS + 
                    c_demo_8_v2 + c_demo_6_v2 + weekend*SchoolPeriod + 
                    (1|ParticipantID),
                  data = models)
+AIC(fmly_dur1, fmly_dur)
 summary(fmly_dur)
 confint(fmly_dur)
 
@@ -459,9 +464,13 @@ plot(fmly_onsd, 2)
 
 ```{r}
 library(car)
+nbhd_dur1 <- lmer(C_ACTI_SleepTime ~ geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + 
+                   c_demo_8_v2 + c_demo_6_v2 + weekend + SchoolPeriod +(1|ParticipantID),
+                 data = models)
 nbhd_dur <- lmer(C_ACTI_SleepTime ~ geo_COI_ED_3.0 + geo_COI_HE_3.0 + geo_COI_SE_3.0 + 
                    c_demo_8_v2 + c_demo_6_v2 + weekend*SchoolPeriod +(1|ParticipantID),
                  data = models)
+AIC(nbhd_dur1, nbhd_dur)
 
 summary(nbhd_dur)
 confint(nbhd_dur)
