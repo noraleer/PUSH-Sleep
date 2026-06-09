@@ -1351,6 +1351,14 @@ Look if there are differences between where there's missing act data and not mis
 
 # LGCM setup
 
-```{r}
+First we need to look for an ideal place for T and determine how many lag and lead days we should use
 
+```{r}
+## Timepoint 1
+sleepfull %>% filter(Time == 0 & T_DD_Period == 1) %>% group_by(T_DD_DD_Interval) %>% 
+  summarise(n = n())
+
+## Timepoint 2
+sleepfull %>% filter(Time == 1 & T_DD_Period == 1) %>% group_by(T_DD_DD_Interval) %>% 
+  summarise(n = n())
 ```
