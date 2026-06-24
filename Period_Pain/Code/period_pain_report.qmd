@@ -32,15 +32,15 @@ library(car)
 library(lmerTest)
 library(lavaan)
 
-Empathy <- read_csv(here("./Period_Pain/Data", "Empathy_Data_Updated.csv"))
+Empathy <- read_csv(here("./Data", "Empathy_Data_Updated.csv"))
 
-actigraphy_t1 <- readxl::read_xlsx(here("./Period_Pain/Data", "Esleep_T1_Sleep Data_DailyActi_4.22.25.xlsx"))
+actigraphy_t1 <- readxl::read_xlsx(here("./Data", "Esleep_T1_Sleep Data_DailyActi_4.22.25.xlsx"))
 
-actigraphy_t2 <- readxl::read_xlsx(here("./Period_Pain/Data", "Esleep_T2_Sleep Data_DailyActi_4.22.25.xlsx"))
+actigraphy_t2 <- readxl::read_xlsx(here("./Data", "Esleep_T2_Sleep Data_DailyActi_4.22.25.xlsx"))
 
-diary_t1 <- readxl::read_xlsx(here("./Period_Pain/Data", "E-Sleep_DailyDiary_FINAL_T1Data_updated1.10.26.xlsx"))
+diary_t1 <- readxl::read_xlsx(here("./Data", "E-Sleep_DailyDiary_FINAL_T1Data_updated1.10.26.xlsx"))
 
-diary_t2 <- readxl::read_xlsx(here("./Period_Pain/Data", "E-Sleep_DailyDiary_FINAL_T2Data_updated1.10.26.xlsx"))
+diary_t2 <- readxl::read_xlsx(here("./Data", "E-Sleep_DailyDiary_FINAL_T2Data_updated1.10.26.xlsx"))
 
 ## Oliver's paths
 # Empathy <- read_csv("./Period-Pain-Data/Empathy_Data_Updated.csv")
@@ -1379,4 +1379,302 @@ sleepfull %>%
   ungroup() %>% 
   group_by(T_DD_DD_Interval) %>% 
   summarise(n = n())
+```
+
+#Time issue
+We don't need to worry qbout time in a mixed model. 
+It's only a problem in LGCM!  If we really want to do that we could start with T-1:T+1.  
+
+#Sleep duration 
+```{r}
+library(lme4)
+library(dplyr)
+library(ggplot2)
+#First find the first period dat for everyone on their period
+first_period <- sleepfull %>% filter(Time == 0 & T_DD_PeriodDay == 1) %>% select(C_ID, first_period_day = T_DD_DD_Interval)
+
+#Now merge this on and it tells me how much I need to shift by
+#For non period individuals day 4 becomes day 0. 
+#For period individuals first period day is day 0.
+#create indicator for period group or now. 
+dat_lgcm0 <- sleepfull %>% filter(Time == 0) %>% left_join(first_period, by = "C_ID") %>% group_by(C_ID) %>% mutate(time_LGCM = ifelse(is.na(first_period_day), T_DD_DD_Interval - 4, T_DD_DD_Interval - first_period_day), 
+              I_Period = ifelse(C_ID %in% first_period$C_ID, 1, 0)) 
+
+#Visualize it
+dat_lgcm0 %>% ggplot() + geom_line(aes(x = time_LGCM, y = sleep_time_T, color = as.factor(I_Period), group = C_ID)) + geom_smooth(aes(x = time_LGCM, y = sleep_time_T, color = as.factor(I_Period))) 
+
+#Now fit a model 
+mod_sleep_time_lgcm_reduced <- lmer(sleep_time_T ~ 1 +  I_Period*time_LGCM + (1 + time_LGCM|C_ID), data = dat_lgcm0)
+summary(mod_sleep_time_lgcm_reduced)
+
+newdat <- expand.grid(
+  time_LGCM = seq(-3, 3, length.out = 100),
+  I_Period = unique(dat_lgcm0$I_Period)
+)
+
+newdat$yhat <- predict(mod_sleep_time_lgcm_reduced, newdat, re.form = NA)
+
+ggplot(newdat, aes(time_LGCM, yhat, color = as.factor(I_Period))) +
+  geom_line(linewidth = 1.2) +
+  theme_minimal()
+
+#quadratic
+mod_sleep_time_lgcm_reduced_quadratic <- lmer(sleep_time_T ~ 1 +  I_Period*time_LGCM + I_Period*I(time_LGCM^2) + (1 + time_LGCM|C_ID), data = dat_lgcm0)
+summary(mod_sleep_time_lgcm_reduced_quadratic)
+
+newdat <- expand.grid(
+  time_LGCM = seq(min(dat_lgcm0$time_LGCM), max(dat_lgcm0$time_LGCM), length.out = 100),
+  I_Period = unique(dat_lgcm0$I_Period)
+)
+
+newdat$yhat <- predict(mod_sleep_time_lgcm_reduced_quadratic, newdat, re.form = NA)
+
+ggplot(newdat, aes(time_LGCM, yhat, color = as.factor(I_Period))) +
+  geom_line(linewidth = 1.2) +
+  theme_minimal()
+
+
+#With covaraites
+library(lme4)
+mod_sleep_time_lgcm_full <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend  + BMI + I(age-13) + I_Period*time_LGCM + T_DD_PeriodPain + (1 + time_LGCM|C_ID), data = dat_lgcm0)
+summary(mod_sleep_time_lgcm_full)
+
+newdat <- expand.grid(
+  time_LGCM = seq(min(dat_lgcm0$time_LGCM), max(dat_lgcm0$time_LGCM), length.out = 100),
+  I_Period = unique(dat_lgcm0$I_Period), 
+  BodyTotal = mean(dat_lgcm0$BodyTotal, na.rm = T),
+  BMI = mean(dat_lgcm0$BMI, na.rm = T),
+  age = mean(dat_lgcm0$age),
+  T_DD_PeriodPain = mean(dat_lgcm0$T_DD_PeriodPain, na.rm = T),
+  weekend = 0
+)
+
+newdat$yhat <- predict(mod_sleep_time_lgcm_full, newdat, re.form = NA)
+
+ggplot(newdat, aes(time_LGCM, yhat, color = as.factor(I_Period))) +
+  geom_line(linewidth = 1.2) +
+  theme_minimal()
+```
+
+#Second time point
+
+```{r}
+library(lme4)
+library(dplyr)
+library(ggplot2)
+#First find the first period dat for everyone on their period
+first_period <- sleepfull %>% filter(Time == 1 & T_DD_PeriodDay == 1) %>% select(C_ID, first_period_day = T_DD_DD_Interval)
+
+#Now merge this on and it tells me how much I need to shift by
+#For non period individuals day 4 becomes day 0. 
+#For period individuals first period day is day 0.
+#create indicator for period group or now. 
+dat_lgcm0 <- sleepfull %>% filter(Time == 1) %>% left_join(first_period, by = "C_ID") %>% group_by(C_ID) %>% mutate(time_LGCM = ifelse(is.na(first_period_day), T_DD_DD_Interval - 4, T_DD_DD_Interval - first_period_day), 
+              I_Period = ifelse(C_ID %in% first_period$C_ID, 1, 0)) 
+
+#Visualize it
+dat_lgcm0 %>% ggplot() + geom_line(aes(x = time_LGCM, y = sleep_time_T, color = as.factor(I_Period), group = C_ID)) + geom_smooth(aes(x = time_LGCM, y = sleep_time_T, color = as.factor(I_Period))) 
+
+#Now fit a model 
+mod_sleep_time_lgcm_reduced <- lmer(sleep_time_T ~ 1 +  I_Period*time_LGCM + (1 + time_LGCM|C_ID), data = dat_lgcm0)
+summary(mod_sleep_time_lgcm_reduced)
+
+newdat <- expand.grid(
+  time_LGCM = seq(-3,3, length.out = 100),
+  I_Period = unique(dat_lgcm0$I_Period)
+)
+
+newdat$yhat <- predict(mod_sleep_time_lgcm_reduced, newdat, re.form = NA)
+
+ggplot(newdat, aes(time_LGCM, yhat, color = as.factor(I_Period))) +
+  geom_line(linewidth = 1.2) +
+  theme_minimal()
+
+#quadratic
+mod_sleep_time_lgcm_reduced_quadratic <- lmer(sleep_time_T ~ 1 +  I_Period*time_LGCM + I_Period*I(time_LGCM^2) + (1 + time_LGCM|C_ID), data = dat_lgcm0)
+summary(mod_sleep_time_lgcm_reduced_quadratic)
+
+newdat <- expand.grid(
+  time_LGCM = seq(-3,3, length.out = 100),
+  I_Period = unique(dat_lgcm0$I_Period)
+)
+
+newdat$yhat <- predict(mod_sleep_time_lgcm_reduced_quadratic, newdat, re.form = NA)
+
+ggplot(newdat, aes(time_LGCM, yhat, color = as.factor(I_Period))) +
+  geom_line(linewidth = 1.2) +
+  theme_minimal()
+
+
+#With covaraites
+library(lme4)
+mod_sleep_time_lgcm_full <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend  + BMI + I(age-13) + I_Period*time_LGCM + T_DD_PeriodPain + (1 + time_LGCM|C_ID), data = dat_lgcm0)
+summary(mod_sleep_time_lgcm_full)
+
+newdat <- expand.grid(
+  time_LGCM = seq(min(dat_lgcm0$time_LGCM), max(dat_lgcm0$time_LGCM), length.out = 100),
+  I_Period = unique(dat_lgcm0$I_Period), 
+  BodyTotal = mean(dat_lgcm0$BodyTotal, na.rm = T),
+  BMI = mean(dat_lgcm0$BMI, na.rm = T),
+  age = mean(dat_lgcm0$age),
+  T_DD_PeriodPain = mean(dat_lgcm0$T_DD_PeriodPain, na.rm = T),
+  weekend = 0
+)
+
+newdat$yhat <- predict(mod_sleep_time_lgcm_full, newdat, re.form = NA)
+
+ggplot(newdat, aes(time_LGCM, yhat, color = as.factor(I_Period))) +
+  geom_line(linewidth = 1.2) +
+  theme_minimal()
+```
+
+# Can I combine data at both time points? 
+
+```{r}
+library(lme4)
+library(dplyr)
+library(ggplot2)
+#First find the first period day for everyone on their period
+first_period0 <- sleepfull %>% filter(Time == 0 & T_DD_PeriodDay == 1) %>% select(C_ID, first_period_day = T_DD_DD_Interval, Time)
+
+first_period1 <- sleepfull %>% filter(Time == 1 & T_DD_PeriodDay == 1) %>% select(C_ID, first_period_day = T_DD_DD_Interval, Time)
+
+first_period <- bind_rows(first_period0, first_period1)
+
+#Now merge this on and it tells me how much I need to shift by
+#For non period individuals day 4 becomes day 0. 
+#For period individuals first period day is day 0.
+#create indicator for period group or now. 
+dat_lgcm0 <- sleepfull %>% left_join(first_period, by = c("C_ID", "Time")) %>% group_by(C_ID, Time) %>% mutate(time_LGCM = ifelse(is.na(first_period_day), T_DD_DD_Interval - 4, T_DD_DD_Interval - first_period_day), 
+              I_Period = ifelse(C_ID %in% first_period$C_ID, 1, 0)) 
+
+#Visualize it
+dat_lgcm0 %>% ggplot() + geom_line(aes(x = time_LGCM, y = sleep_time_T, color = as.factor(I_Period), group = C_ID)) + geom_smooth(aes(x = time_LGCM, y = sleep_time_T, color = as.factor(I_Period))) 
+
+#Now fit a model 
+mod_sleep_time_lgcm_reduced <- lmer(sleep_time_T ~ 1 +  I_Period*time_LGCM + (1 + time_LGCM|C_ID), data = dat_lgcm0)
+summary(mod_sleep_time_lgcm_reduced)
+
+newdat <- expand.grid(
+  time_LGCM = seq(-3,3, length.out = 100),
+  I_Period = unique(dat_lgcm0$I_Period)
+)
+
+newdat$yhat <- predict(mod_sleep_time_lgcm_reduced, newdat, re.form = NA)
+
+ggplot(newdat, aes(time_LGCM, yhat, color = as.factor(I_Period))) +
+  geom_line(linewidth = 1.2) +
+  theme_minimal()
+
+#quadratic
+mod_sleep_time_lgcm_reduced_quadratic <- lmer(sleep_time_T ~ 1 +  I_Period*time_LGCM + I_Period*I(time_LGCM^2) + (1 + time_LGCM|C_ID), data = dat_lgcm0)
+summary(mod_sleep_time_lgcm_reduced_quadratic)
+
+newdat <- expand.grid(
+  time_LGCM = seq(-3,3, length.out = 100),
+  I_Period = unique(dat_lgcm0$I_Period)
+)
+
+newdat$yhat <- predict(mod_sleep_time_lgcm_reduced_quadratic, newdat, re.form = NA)
+
+ggplot(newdat, aes(time_LGCM, yhat, color = as.factor(I_Period))) +
+  geom_line(linewidth = 1.2) +
+  theme_minimal()
+
+
+#With covaraites
+library(lme4)
+mod_sleep_time_lgcm_full <- lmer(sleep_time_T ~ 1 + BodyTotal + weekend  + BMI + Time*I(age-13) + I_Period*time_LGCM*Time + T_DD_PeriodPain + (1 + time_LGCM|C_ID), data = dat_lgcm0)
+summary(mod_sleep_time_lgcm_full)
+
+newdat <- expand.grid(
+  time_LGCM = seq(min(dat_lgcm0$time_LGCM), max(dat_lgcm0$time_LGCM), length.out = 100),
+  I_Period = unique(dat_lgcm0$I_Period), 
+  BodyTotal = mean(dat_lgcm0$BodyTotal, na.rm = T),
+  BMI = mean(dat_lgcm0$BMI, na.rm = T),
+  age = mean(dat_lgcm0$age),
+  T_DD_PeriodPain = mean(dat_lgcm0$T_DD_PeriodPain, na.rm = T),
+  weekend = 0, 
+  Time = c(0,1)
+)
+
+newdat$yhat <- predict(mod_sleep_time_lgcm_full, newdat, re.form = NA)
+
+ggplot(newdat, aes(time_LGCM, yhat, color = as.factor(I_Period))) +
+  geom_line(linewidth = 1.2) +
+  theme_minimal() + facet_grid(~Time)
+```
+
+
+#Quality (T_DD_SleepQual)
+#Efficient ( efficiency_T)
+
+```{r}
+library(lme4)
+library(dplyr)
+library(ggplot2)
+#First find the first period dat for everyone on their period
+first_period <- sleepfull %>% filter(Time == 0 & T_DD_PeriodDay == 1) %>% select(C_ID, first_period_day = T_DD_DD_Interval)
+
+#Now merge this on and it tells me how much I need to shift by
+#For non period individuals day 4 becomes day 0. 
+#For period individuals first period day is day 0.
+#create indicator for period group or now. 
+dat_lgcm0 <- sleepfull %>% filter(Time == 0) %>% left_join(first_period, by = "C_ID") %>% group_by(C_ID) %>% mutate(time_LGCM = ifelse(is.na(first_period_day), T_DD_DD_Interval - 4, T_DD_DD_Interval - first_period_day), 
+              I_Period = ifelse(C_ID %in% first_period$C_ID, 1, 0)) 
+
+#Visualize it
+dat_lgcm0 %>% ggplot() + geom_line(aes(x = time_LGCM, y = T_DD_SleepQual, color = as.factor(I_Period), group = C_ID)) + geom_smooth(aes(x = time_LGCM, y = T_DD_SleepQual, color = as.factor(I_Period))) 
+
+#Now fit a model 
+mod_qual_lgcm_reduced <- lmer(T_DD_SleepQual ~ 1 +  I_Period*time_LGCM + (1 + time_LGCM|C_ID), data = dat_lgcm0)
+summary(mod_qual_lgcm_reduced)
+
+newdat <- expand.grid(
+  time_LGCM = seq(-3, 3, length.out = 100),
+  I_Period = unique(dat_lgcm0$I_Period)
+)
+
+newdat$yhat <- predict(mod_qual_lgcm_reduced, newdat, re.form = NA)
+
+ggplot(newdat, aes(time_LGCM, yhat, color = as.factor(I_Period))) +
+  geom_line(linewidth = 1.2) +
+  theme_minimal()
+
+#quadratic
+mod_qual_lgcm_reduced_quadratic <- lmer(T_DD_SleepQual ~ 1 +  I_Period*time_LGCM + I_Period*I(time_LGCM^2) + (1 + time_LGCM|C_ID), data = dat_lgcm0)
+summary(mod_qual_lgcm_reduced_quadratic)
+
+newdat <- expand.grid(
+  time_LGCM = seq(min(dat_lgcm0$time_LGCM), max(dat_lgcm0$time_LGCM), length.out = 100),
+  I_Period = unique(dat_lgcm0$I_Period)
+)
+
+newdat$yhat <- predict(mod_qual_lgcm_reduced_quadratic, newdat, re.form = NA)
+
+ggplot(newdat, aes(time_LGCM, yhat, color = as.factor(I_Period))) +
+  geom_line(linewidth = 1.2) +
+  theme_minimal()
+
+
+#With covaraites
+library(lme4)
+mod_qual_lgcm_full <- lmer(T_DD_SleepQual ~ 1 + BodyTotal + weekend  + BMI + I(age-13) + I_Period*time_LGCM + T_DD_PeriodPain + (1 + time_LGCM|C_ID), data = dat_lgcm0)
+summary(mod_qual_lgcm_full)
+
+newdat <- expand.grid(
+  time_LGCM = seq(min(dat_lgcm0$time_LGCM), max(dat_lgcm0$time_LGCM), length.out = 100),
+  I_Period = unique(dat_lgcm0$I_Period), 
+  BodyTotal = mean(dat_lgcm0$BodyTotal, na.rm = T),
+  BMI = mean(dat_lgcm0$BMI, na.rm = T),
+  age = mean(dat_lgcm0$age),
+  T_DD_PeriodPain = mean(dat_lgcm0$T_DD_PeriodPain, na.rm = T),
+  weekend = 0
+)
+
+newdat$yhat <- predict(mod_qual_lgcm_full, newdat, re.form = NA)
+
+ggplot(newdat, aes(time_LGCM, yhat, color = as.factor(I_Period))) +
+  geom_line(linewidth = 1.2) +
+  theme_minimal()
 ```
